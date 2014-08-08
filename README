@@ -3,6 +3,8 @@ Experian-IDAuth
 This module provides an interface to Experian's Identity Authenticate service. 
 http://www.experian.co.uk/identity-and-fraud/products/authenticate.html
 
+[![Build Status](https://travis-ci.org/binary-com/perl-experian-idauth.svg?branch=master)](https://travis-ci.org/binary-com/perl-experian-idauth)
+
 INSTALLATION
 
 To install this module, run the following commands:
