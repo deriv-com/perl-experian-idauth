@@ -1,0 +1,15 @@
+language: perl
+perl:
+    - "5.18"
+    - "5.16"
+    - "5.14"
+    - "5.12"
+before_install:
+    # install prereqs
+    - "cpanm Locale::Country"
+    - "cpanm Path::Tiny"
+    - "cpanm WWW::Mechanize"
+    - "cpanm XML::Simple"
+    - "cpanm XML::Twig"
+    - "cpanm SOAP::Lite"
+    - "cpanm IO::Socket"
