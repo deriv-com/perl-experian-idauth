@@ -163,7 +163,6 @@ sub _build_request {
 }
 
 # Send the given SOAP request to 192.com
-
 sub _send_request {
     my $self = shift;
 
@@ -571,37 +570,99 @@ sub _pdf_report_filename {
 
 =head1 NAME
 
-Experian::IDAuth - The great new Experian::IDAuth!
+Experian::IDAuth - Experian's ID Authenticate service
 
 =head1 VERSION
 
-Version 0.01
+Version 1.00
 
-=cut
+=head1 DESCRIPTION
 
-=head1 SYNOPSIS
+This module provides an interface to Experian's Identity Authenticate service. 
+http://www.experian.co.uk/identity-and-fraud/products/authenticate.html
 
-Quick summary of what the module does.
+First create a subclass of this module to override the defaults method
+with your own data.
 
-Perhaps a little code snippet.
+    package My::Experian;
+    use strict;
+    use warnings;
+    use base 'Experian::IDAuth';
 
-    use Experian::IDAuth;
+    # if you're using a logger
+    use Log::Log4perl;
 
-    my $foo = Experian::IDAuth->new();
-    ...
+    sub defaults {
+        my $self = shift;
+
+        return (
+            $self->SUPER::defaults,
+            log           => Log::Log4perl::get_logger,
+            username      => 'my_user',
+            password      => 'my_pass',
+            residence     => $residence,
+            postcode      => $postcode || '',
+            date_of_birth => $date_of_birth || '',
+            first_name    => $first_name || '',
+            last_name     => $last_name || '',
+            phone         => $phone || '',
+            email         => $email || '',
+        );
+    }
+
+    1;
+
+Then use this module.
+
+    use My::Experian;
+
+    # search_option can either be ProveID_KYC or CheckID
+    my $prove_id = My::Experian->new(
+        search_option => 'ProveID_KYC',
+    );
+
+    my $prove_id_result = $prove_id->get_result();
+
+    if (!$prove_id->has_done_request) {
+        # connection problems
+        die;
+    }
+
+    if ($prove_id_result->{fully_authenticated}) {
+        # client successfully authenticated
+    }
+    if ($prove_id_result->{age_verified}) {
+        # client's age is verified
+    }
+    if ($prove_id_result->{deceased} || $prove_id_result->{fraud}) {
+        # client flagged as deceased or fraud
+    }
+
+    # CheckID is a more simpler version and can be used if ProveID_KYC fails
+    my $check_id = My::Experian->new(
+        search_option => 'CheckID',
+    );
+
+    if (!$check_id->has_done_request) {
+        # connection problems
+        die;
+    }
+
+    if ($check_id->get_result()) {
+        # client successfully authenticated
+    }
 
 =head1 AUTHOR
 
-binary.com, C<< <perl at binary.com> >>
+binary.com, C<perl at binary.com>
 
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-experian-idauth at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Experian-IDAuth>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
-
-
-
+Please report any bugs or feature requests to C<bug-experian-idauth at rt.cpan.org>, 
+or through the web interface at
+L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Experian-IDAuth>.  
+We will be notified, and then you'll automatically be notified of progress 
+on your bug as we make changes.
 
 =head1 SUPPORT
 
@@ -633,8 +694,15 @@ L<http://search.cpan.org/dist/Experian-IDAuth/>
 =back
 
 
-=head1 ACKNOWLEDGEMENTS
+=head1 DEPENDENCIES
 
+    Locale::Country
+    Path::Tiny
+    WWW::Mechanize
+    XML::Simple
+    XML::Twig
+    SOAP::Lite
+    IO::Socket
 
 =head1 LICENSE AND COPYRIGHT
 
