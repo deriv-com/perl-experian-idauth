@@ -28,6 +28,9 @@ sub defaults {
         api_uri     => 'http://corpwsdl.oneninetwo',
         api_proxy   => 'https://xml.proveid.experian.com/IDSearch.cfc',
         folder      => '/tmp/proveid',
+
+        # if you're using a logger,
+        #logger     => Log::Log4per::get_logger,
     );
 }
 
@@ -35,6 +38,16 @@ sub set {
     my ( $self, %args ) = @_;
     $self->{$_} = $args{$_} for keys %args;
     return $self;
+}
+
+sub logi {
+    my ( $self, $msg ) = @_;
+
+    if ( $self->{logger} ) {
+        return $self->{logger}->info($msg);
+    }
+
+    return;
 }
 
 sub get_result {
@@ -597,7 +610,7 @@ with your own data.
 
         return (
             $self->SUPER::defaults,
-            log           => Log::Log4perl::get_logger,
+            logger        => Log::Log4perl::get_logger,
             username      => 'my_user',
             password      => 'my_pass',
             residence     => $residence,

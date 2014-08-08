@@ -18,9 +18,14 @@ WriteMakefile(
         'Test::More' => 0,
     },
     PREREQ_PM => {
-        #'ABC'              => 1.6,
-        #'Foo::Bar::Module' => 5.0401,
-    },
+        'Locale::Country' => 0,
+        'Path::Tiny'      => 0,
+        'WWW::Mechanize'  => 0,
+        'XML::Simple'     => 0,
+        'XML::Twig'       => 0,
+        'SOAP::Lite'      => 0,
+        'IO::Socket'      => 0,
+      },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'Experian-IDAuth-*' },
 );
