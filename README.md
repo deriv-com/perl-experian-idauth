@@ -4,6 +4,7 @@ This module provides an interface to Experian's Identity Authenticate service.
 http://www.experian.co.uk/identity-and-fraud/products/authenticate.html
 
 [![Build Status](https://travis-ci.org/binary-com/perl-experian-idauth.svg?branch=master)](https://travis-ci.org/binary-com/perl-experian-idauth)
+[![Gitter chat](https://badges.gitter.im/binary-com/perl-experian-idauth.png)](https://gitter.im/binary-com/perl-experian-idauth)
 
 INSTALLATION
 
