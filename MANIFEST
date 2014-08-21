@@ -1,6 +1,6 @@
-t/00-load.t
-t/decision.t
-Makefile.PL
 lib/Experian/IDAuth.pm
+Makefile.PL
 MANIFEST
 README.md
+t/00-load.t
+t/decision.t
