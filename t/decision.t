@@ -1289,7 +1289,8 @@ my $deceased =<<EOD;
 </Search>
 EOD
 
-# Note that here we're ignoring ConfidenceLevel in DeceasedRecord, 'cause DeceasedMatch is in CreditReferenceSummary
+# Note that here we're ignoring ConfidenceLevel in DeceasedRecord, 
+# cause DeceasedMatch is in CreditReferenceSummary
 my $cr_deceased =<<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">

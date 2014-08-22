@@ -4,3 +4,4 @@ MANIFEST
 README.md
 t/00-load.t
 t/decision.t
+t/xml_as_hash.t
