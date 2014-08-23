@@ -70,12 +70,14 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
 endif
 set shortmess=aoO
 badd +1 t/decision.t
-badd +4 lib/Experian/IDAuth.pm
-badd +0 fully1.xml
+badd +35 lib/Experian/IDAuth.pm
+badd +1 fully1.xml
 badd +9 xml_tidy.pl
-badd +0 t/decision_2.t
-badd +0 t/xml_as_hash.t
-badd +0 Makefile.PL
+badd +1 t/decision_2.t
+badd +1 t/xml_as_hash.t
+badd +1 Makefile.PL
+badd +62 t/get_result.t
+badd +0 t/get_result_check_id.t
 args t/decision.t
 edit lib/Experian/IDAuth.pm
 set splitbelow splitright
@@ -88,18 +90,23 @@ wincmd w
 wincmd w
 wincmd _ | wincmd |
 split
-1wincmd k
+wincmd _ | wincmd |
+split
+2wincmd k
+wincmd w
 wincmd w
 set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
 exe 'vert 1resize ' . ((&columns * 38 + 119) / 239)
-exe 'vert 2resize ' . ((&columns * 93 + 119) / 239)
-exe '3resize ' . ((&lines * 64 + 34) / 68)
-exe 'vert 3resize ' . ((&columns * 106 + 119) / 239)
+exe 'vert 2resize ' . ((&columns * 91 + 119) / 239)
+exe '3resize ' . ((&lines * 62 + 34) / 68)
+exe 'vert 3resize ' . ((&columns * 108 + 119) / 239)
 exe '4resize ' . ((&lines * 1 + 34) / 68)
-exe 'vert 4resize ' . ((&columns * 106 + 119) / 239)
+exe 'vert 4resize ' . ((&columns * 108 + 119) / 239)
+exe '5resize ' . ((&lines * 1 + 34) / 68)
+exe 'vert 5resize ' . ((&columns * 108 + 119) / 239)
 argglobal
 enew
 file __Tag_List__
@@ -328,11 +335,122 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 8 - ((7 * winheight(0) + 33) / 66)
+let s:l = 473 - ((15 * winheight(0) + 33) / 66)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-8
+473
+normal! 016l
+lcd /apps/perl-experian-idauth
+wincmd w
+argglobal
+edit /apps/perl-experian-idauth/t/get_result_check_id.t
+setlocal keymap=
+setlocal noarabic
+setlocal autoindent
+setlocal nobinary
+setlocal bufhidden=
+setlocal buflisted
+setlocal buftype=
+setlocal nocindent
+setlocal cinkeys=0{,0},0),:,0#,!^F,o,O,e
+setlocal cinoptions=
+setlocal cinwords=if,else,while,do,for,switch
+setlocal colorcolumn=
+setlocal comments=:#
+setlocal commentstring=#%s
+setlocal complete=.,w,b,u,t
+setlocal concealcursor=
+setlocal conceallevel=0
+setlocal completefunc=
+setlocal nocopyindent
+setlocal cryptmethod=
+setlocal nocursorbind
+setlocal nocursorcolumn
+setlocal nocursorline
+setlocal define=[^A-Za-z_]
+setlocal dictionary=
+setlocal nodiff
+setlocal equalprg=
+setlocal errorformat=
+setlocal expandtab
+if &filetype != 'perl'
+setlocal filetype=perl
+endif
+set foldcolumn=2
+setlocal foldcolumn=2
+setlocal foldenable
+setlocal foldexpr=0
+setlocal foldignore=#
+setlocal foldlevel=0
+setlocal foldmarker={{{,}}}
+setlocal foldmethod=manual
+setlocal foldminlines=1
+setlocal foldnestmax=20
+setlocal foldtext=foldtext()
+setlocal formatexpr=
+setlocal formatoptions=tcrq
+setlocal formatlistpat=^\\s*\\d\\+[\\]:.)}\\t\ ]\\s*
+setlocal grepprg=
+setlocal iminsert=0
+setlocal imsearch=0
+setlocal include=\\<\\(use\\|require\\)\\>
+setlocal includeexpr=substitute(substitute(v:fname,'::','/','g'),'$','.pm','')
+setlocal indentexpr=GetPerlIndent()
+setlocal indentkeys=0{,0},:,0#,!^F,o,O,e,0=,0),0],0=or,0=and
+setlocal noinfercase
+setlocal iskeyword=@,48-57,_,192-255,:
+setlocal keywordprg=perldoc\ -f
+setlocal nolinebreak
+setlocal nolisp
+setlocal nolist
+setlocal makeprg=
+setlocal matchpairs=(:),{:},[:],<:>
+setlocal modeline
+setlocal modifiable
+setlocal nrformats=octal,hex
+setlocal nonumber
+setlocal numberwidth=4
+setlocal omnifunc=
+setlocal path=/etc/perl,/usr/local/lib/perl/5.14.2,/usr/local/share/perl/5.14.2,/usr/lib/perl5,/usr/share/perl5,/usr/lib/perl/5.14,/usr/share/perl/5.14,/usr/local/lib/site_perl,,
+setlocal nopreserveindent
+setlocal nopreviewwindow
+setlocal quoteescape=\\
+setlocal noreadonly
+setlocal norelativenumber
+setlocal norightleft
+setlocal rightleftcmd=search
+setlocal noscrollbind
+setlocal shiftwidth=4
+setlocal noshortname
+setlocal nosmartindent
+setlocal softtabstop=0
+setlocal nospell
+setlocal spellcapcheck=[.?!]\\_[\\])'\"\	\ ]\\+
+setlocal spellfile=
+setlocal spelllang=en
+setlocal statusline=
+setlocal suffixesadd=
+setlocal swapfile
+setlocal synmaxcol=3000
+if &syntax != 'perl'
+setlocal syntax=perl
+endif
+setlocal tabstop=4
+setlocal tags=
+setlocal textwidth=80
+setlocal thesaurus=
+setlocal noundofile
+setlocal nowinfixheight
+setlocal nowinfixwidth
+setlocal wrap
+setlocal wrapmargin=0
+silent! normal! zE
+let s:l = 310 - ((50 * winheight(0) + 31) / 62)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+310
 normal! 0
 lcd /apps/perl-experian-idauth
 wincmd w
@@ -439,11 +557,11 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 270 - ((21 * winheight(0) + 32) / 64)
+let s:l = 278 - ((0 * winheight(0) + 0) / 1)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-270
+278
 normal! 0
 lcd /apps/perl-experian-idauth
 wincmd w
@@ -550,21 +668,23 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 1 - ((0 * winheight(0) + 0) / 1)
+let s:l = 23 - ((0 * winheight(0) + 0) / 1)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-1
+23
 normal! 0
 lcd /apps/perl-experian-idauth
 wincmd w
 2wincmd w
 exe 'vert 1resize ' . ((&columns * 38 + 119) / 239)
-exe 'vert 2resize ' . ((&columns * 93 + 119) / 239)
-exe '3resize ' . ((&lines * 64 + 34) / 68)
-exe 'vert 3resize ' . ((&columns * 106 + 119) / 239)
+exe 'vert 2resize ' . ((&columns * 91 + 119) / 239)
+exe '3resize ' . ((&lines * 62 + 34) / 68)
+exe 'vert 3resize ' . ((&columns * 108 + 119) / 239)
 exe '4resize ' . ((&lines * 1 + 34) / 68)
-exe 'vert 4resize ' . ((&columns * 106 + 119) / 239)
+exe 'vert 4resize ' . ((&columns * 108 + 119) / 239)
+exe '5resize ' . ((&lines * 1 + 34) / 68)
+exe 'vert 5resize ' . ((&columns * 108 + 119) / 239)
 tabnext 1
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf
