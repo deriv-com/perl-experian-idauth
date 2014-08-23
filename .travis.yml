@@ -13,3 +13,4 @@ before_install:
     - "cpanm XML::Twig"
     - "cpanm SOAP::Lite"
     - "cpanm IO::Socket"
+    - "cpanm Test::MockModule"
