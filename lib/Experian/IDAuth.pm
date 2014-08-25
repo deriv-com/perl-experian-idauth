@@ -2,7 +2,7 @@ package Experian::IDAuth;
 use strict;
 use warnings;
 
-our $VERSION = '1.3';
+our $VERSION = '1.4';
 
 use Locale::Country;
 use Path::Tiny;
