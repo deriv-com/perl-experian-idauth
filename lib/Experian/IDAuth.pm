@@ -2,7 +2,7 @@ package Experian::IDAuth;
 use strict;
 use warnings;
 
-our $VERSION = '1.4';
+our $VERSION = '1.5';
 
 use Locale::Country;
 use Path::Tiny;
@@ -251,7 +251,7 @@ sub _build_person_tag {
         my ( undef, undef, undef, undef, undef, $curyear ) = gmtime(time);
         $curyear += 1900;
         my $maxyear = $curyear - 17;
-        my $minyear = $curyear - 90;
+        my $minyear = $curyear - 100;
 
         if ( $birth_year > $maxyear or $birth_year < $minyear ) {
             return;
@@ -587,7 +587,7 @@ Experian::IDAuth - Experian's ID Authenticate service
 
 =head1 VERSION
 
-Version 1.00
+Version 1.5
 
 =head1 DESCRIPTION
 
