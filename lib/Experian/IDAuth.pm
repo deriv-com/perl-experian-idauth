@@ -405,9 +405,9 @@ sub _get_result_proveid {
       qw(BOEMatch PEPMatch OFACMatch CIFASMatch);
 
     if (@matches) {
-        if ( grep { /^(OFACMatch|CIFASMatch)$/ } @matches ) {
+        if ( grep { /^(BOEMatch|PEPMatch|OFACMatch|CIFASMatch)$/ } @matches ) {
 
-            # OFAC and CIFAS are hard failures and need manual verification
+            # BOEMatch PEPMatch OFAC and CIFAS are hard failures and need manual verification
             delete $decision->{age_verified};
             $decision->{deny} = 1;
         }
