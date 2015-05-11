@@ -2,7 +2,7 @@ package Experian::IDAuth;
 use strict;
 use warnings;
 
-our $VERSION = '1.5';
+our $VERSION = '1.6';
 
 use Locale::Country;
 use Path::Tiny;
@@ -147,7 +147,7 @@ sub valid_country {
     my $country = shift;
     for (
 
-        # To make CheckID work well for non-UK countries we need to pass 
+        # To make CheckID work well for non-UK countries we need to pass
         # in drivers license, Passport MRZ, national ID number
         #qw( ad at au be ca ch cz dk es fi fr gb gg hu ie im it je lu nl no pt se sk us )
         qw ( gb )
@@ -366,7 +366,7 @@ sub _get_result_proveid {
     my $confidence_level = 0;
     if ( $report_summary{Deceased} ) {
 
-        # We only taking Deceased flag in ReportSummary into account 
+        # We only taking Deceased flag in ReportSummary into account
         # if ConfidenceLevel 7 or above
         my ($deceased_record) =
           $twig->get_xpath('/Search/Result/Deceased/DeceasedRecord');
@@ -587,11 +587,11 @@ Experian::IDAuth - Experian's ID Authenticate service
 
 =head1 VERSION
 
-Version 1.5
+Version 1.6
 
 =head1 DESCRIPTION
 
-This module provides an interface to Experian's Identity Authenticate service. 
+This module provides an interface to Experian's Identity Authenticate service.
 http://www.experian.co.uk/identity-and-fraud/products/authenticate.html
 
 First create a subclass of this module to override the defaults method
@@ -671,10 +671,10 @@ binary.com, C<perl at binary.com>
 
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-experian-idauth at rt.cpan.org>, 
+Please report any bugs or feature requests to C<bug-experian-idauth at rt.cpan.org>,
 or through the web interface at
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Experian-IDAuth>.  
-We will be notified, and then you'll automatically be notified of progress 
+L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Experian-IDAuth>.
+We will be notified, and then you'll automatically be notified of progress
 on your bug as we make changes.
 
 =head1 SUPPORT
