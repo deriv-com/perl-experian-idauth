@@ -2376,19 +2376,19 @@ eq_or_diff(
 eq_or_diff(
     examine($age_only_2),
     {
-        age_verified => 1,
+        deny => 1,
         matches      => ['PEPMatch'],
     },
-    "    but if PEP is set, then age_verified only"
+    "    if PEP is set, then fail verification"
 );
 
 eq_or_diff(
     examine($age_only_3),
     {
-        age_verified => 1,
+        deny => 1,
         matches      => ['BOEMatch'],
     },
-    "    if BOEMatch is set, then age_verified only"
+    "    if BOEMatch is set, then fail verification"
 );
 
 eq_or_diff(
