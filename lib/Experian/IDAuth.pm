@@ -2,7 +2,7 @@ package Experian::IDAuth;
 use strict;
 use warnings;
 
-our $VERSION = '1.6';
+our $VERSION = '1.7';
 
 use Locale::Country;
 use Path::Tiny;
@@ -150,7 +150,7 @@ sub valid_country {
         # To make CheckID work well for non-UK countries we need to pass
         # in drivers license, Passport MRZ, national ID number
         #qw( ad at au be ca ch cz dk es fi fr gb gg hu ie im it je lu nl no pt se sk us )
-        qw ( gb )
+        qw ( gb im )
       )
     {
         return 1 if $country eq $_;
