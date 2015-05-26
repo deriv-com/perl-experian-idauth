@@ -2,7 +2,7 @@ package Experian::IDAuth;
 use strict;
 use warnings;
 
-our $VERSION = '1.7';
+our $VERSION = '1.8';
 
 use Locale::Country;
 use Path::Tiny;
@@ -587,7 +587,7 @@ Experian::IDAuth - Experian's ID Authenticate service
 
 =head1 VERSION
 
-Version 1.6
+Version 1.8
 
 =head1 DESCRIPTION
 

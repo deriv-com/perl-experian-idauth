@@ -16,6 +16,7 @@ WriteMakefile(
     },
     BUILD_REQUIRES => {
         'Test::More' => 0,
+        'Test::Most' => 0,
         'Test::MockModule' => 0,
     },
     PREREQ_PM => {
