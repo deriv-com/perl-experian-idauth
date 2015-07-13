@@ -10,8 +10,10 @@ use Data::Dumper;
 use lib 'lib';
 use_ok( 'Experian::IDAuth' );
 
-# clean up
-system "rm -rf /tmp/proveid/";
+my $tmp = $ENV{TEMP} || '/tmp'; # portability between windows and linux
+
+unlink $_ for <"$tmp/proveid/*">;
+rmdir "$tmp/proveid/*";
 
 my $module = Test::MockModule->new('SOAP::Lite');
 my $xml;
