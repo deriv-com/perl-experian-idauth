@@ -411,7 +411,7 @@ sub _get_result_proveid {
 
     # if client is in Directors list, we should not fully authenticate him
     if ( $report_summary{Directors} ) {
-        $decision->{matches} = [ @{$decision->{matches}, 'Directors' ];
+        $decision->{matches} = [ @{$decision->{matches}}, 'Directors' ];
     }
 
     # check if client can be fully authenticated
