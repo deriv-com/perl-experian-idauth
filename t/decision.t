@@ -1485,31 +1485,28 @@ my $fraud =<<EOD;
 </Search>
 EOD
 
-eq_or_diff(
-    examine($fully1),
-    {
-        age_verified        => 1,
-        fully_authenticated => 1,
-    },
-    "Fully1 fully authenticated"
-);
-eq_or_diff(
-    examine($fully2),
-    {
-        age_verified        => 1,
-        fully_authenticated => 1,
-    },
-    "Fully2 fully authenticated"
-);
-eq_or_diff(examine($not_authenticated), {}, "Not authenticated as expected");
-eq_or_diff(
-    examine($not_deceased),
-    {
-        age_verified        => 1,
-        fully_authenticated => 1,
-    },
-    "Deceased with low certainty level was fully authenticated"
-);
+my $result = examine($fully1);
+is($result->{age_verified}, 1, "Fully 1, age verified");
+is($result->{fully_authenticated}, 1, 'Fully 1, Fully authenticated');
+ok(not exists $result->{deny}, 'Fully 1, not denied');
+
+$result = examine($fully2);
+is($result->{age_verified}, 1, "Fully 2, age verified");
+is($result->{fully_authenticated}, 1, 'Fully 2, Fully authenticated');
+ok(not exists $result->{deny}, 'Fully 2, not denied');
+
+$result = examine($not_authenticated);
+ok(not exists $result->{deny}, 'not authenticated, not denied');
+ok(not exists $result->{age_verified}, 'not authenticated, not age verified');
+ok(not exists $result->{fully_authenticated}, 'not authenticated');
+
+$result = examine($not_deceased),
+is($result->{age_verified}, 1, "Not deceased, age verified");
+is($result->{fully_authenticated}, 1, 'Not deceased, Fully authenticated');
+ok(not exists $result->{deceased}, 'Not deceased, not deceased'
+ok(not exists $result->{deny}, 'Not deceased, not denied');
+
+
 eq_or_diff(examine($deceased),    {deceased => 1}, "Found deceased in report summary");
 eq_or_diff(examine($cr_deceased), {deceased => 1}, "Found deceased in credit reference");
 eq_or_diff(examine($fraud),       {fraud    => 1}, "Found fraud in report summary");
