@@ -396,7 +396,7 @@ sub _get_result_proveid {
     #
     # Add NoOfCCJ separately since we don't fail that one.
 
-    $decision->{CCJ} = 1 if $credit_reference->findvalue('NoOfCCJ')
+    $decision->{CCJ} = 1 if $credit_reference->findvalue('NoOfCCJ');
     
     my @matches =
       map  { $_->[0] }
