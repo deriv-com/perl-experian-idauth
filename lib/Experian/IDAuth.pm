@@ -580,7 +580,7 @@ Experian::IDAuth - Experian's ID Authenticate service
 
 =head1 VERSION
 
-Version 1.8
+Version 2.0.0
 
 =head1 DESCRIPTION
 
@@ -634,14 +634,19 @@ Then use this module.
         die;
     }
 
-    if ($prove_id_result->{fully_authenticated}) {
-        # client successfully authenticated
-    }
     if ($prove_id_result->{age_verified}) {
         # client's age is verified
     }
     if ($prove_id_result->{deceased} || $prove_id_result->{fraud}) {
         # client flagged as deceased or fraud
+    }
+    if ($prove_id_result->{deny}) {
+        # client on any of PEP, OFAC, or BOE list
+        # you can check $prove_id_result->{PEP} etc if you want more detail
+    }
+    if ($prove_id_result->{fully_authenticated}) {
+        # client successfully authenticated, 
+        # DOES NOT MEAN NO CONCERNS
     }
 
     # CheckID is a more simpler version and can be used if ProveID_KYC fails
