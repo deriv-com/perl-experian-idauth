@@ -2374,32 +2374,33 @@ my $age_only_10 =<<EOD;
 </Search>
 EOD
 
-eq_or_diff(
-    examine($age_only_1),
-    {
-        age_verified        => 1,
-        fully_authenticated => 1,
-    },
-    "Two in KYC Summary so fully authenticated"
-);
+$result = examine($age_only_1),
+is($result->{age_verified}, 1, "Age only 1, age verified");
+is($result->{fully_authenticated}, 1, 'Age only 1, Fully authenticated');
+ok(not(exists $result->{deceased}), 'Age only 1, not deceased');
+ok(not(exists $result->{deny}), 'Age only 1, not denied');
 
-eq_or_diff(
-    examine($age_only_2),
-    {
-        deny => 1,
-        matches      => ['PEPMatch'],
-    },
-    "    if PEP is set, then fail verification"
-);
+$result = examine($age_only_2),
+is($result->{age_verified}, 1, "Age only 2, age verified");
+is($result->{fully_authenticated}, 1, 'Age only 2, Fully authenticated');
+ok(not(exists $result->{deceased}), 'Age only 2, not deceased');
+is($result->{deny}, 1, 'Age only 2, denied');
+is($result->{PEP}, 1, 'Age only 2, PEP flagged');
 
-eq_or_diff(
-    examine($age_only_3),
-    {
-        deny => 1,
-        matches      => ['BOEMatch'],
-    },
-    "    if BOEMatch is set, then fail verification"
-);
+$result = examine($age_only_3),
+is($result->{age_verified}, 1, "Age only 3, age verified");
+is($result->{fully_authenticated}, 1, 'Age only 3, Fully authenticated');
+ok(not(exists $result->{deceased}), 'Age only 3, not deceased');
+is($result->{deny}, 1, 'Age only 3, denied');
+is($result->{BOE}, 1, 'Age only 3, BOE flagged');
+
+$result = examine($age_only_4),
+is($result->{age_verified}, 1, "Age only 4, age verified");
+is($result->{fully_authenticated}, 1, 'Age only 4, Fully authenticated');
+ok(not(exists $result->{deceased}), 'Age only 4, not deceased');
+is($result->{deny}, 1, 'Age only 4, denied');
+is($result->{OFAC}, 1, 'Age only 4, OFAC flagged');
+
 
 eq_or_diff(
     examine($age_only_4),
