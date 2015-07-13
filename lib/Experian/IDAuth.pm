@@ -400,7 +400,7 @@ sub _get_result_proveid {
       qw(BOEMatch PEPMatch OFACMatch CIFASMatch);
 
     if (@matches) {
-        my @hard_fails = grep { $f = $_; 
+        my @hard_fails = grep { my $f = $_; 
                                 grep { "${f}Match" eq $_ } @matches } 
                          qw(BOE PEP OFAC CIFAS);
         $decision->{$_} = 1 for @hard_fails;
