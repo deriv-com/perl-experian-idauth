@@ -663,6 +663,26 @@ Then use this module.
         # client successfully authenticated
     }
 
+=head1 CHANGES FROM 1.X
+
+The 2.x series of this module provides some significant changes from 1.x. 
+
+With 1.x, fully_authenticated could only suggest that there were no concerns
+and that the client was fully authenticated.  Now, we set this in addition to
+any failure fields.  For this reason it is important to handle failures
+first and then check this response attribute.  Note that the response attribute
+also now shows the full list (not the first) set of possible concerns.
+
+Therefore:
+
+=over
+
+=item One cannot assume that fully_authenticated means "success" and
+
+=item Reasons for failure are no longer exclusive.
+
+=back
+
 =head1 AUTHOR
 
 binary.com, C<perl at binary.com>
