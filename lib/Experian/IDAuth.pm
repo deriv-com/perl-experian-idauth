@@ -2,7 +2,7 @@ package Experian::IDAuth;
 use strict;
 use warnings;
 
-our $VERSION = '1.8';
+our $VERSION = '2.0.0';
 
 use Locale::Country;
 use Path::Tiny;
@@ -358,7 +358,7 @@ sub _get_result_proveid {
 
     return unless $credit_reference and $kyc_summary;
 
-    my $decision = {};
+    my $decision = { matches => []};
 
     # check if client has died or fraud
     my $cr_deceased = $credit_reference->findvalue('DeceasedMatch') || 0;
@@ -376,13 +376,11 @@ sub _get_result_proveid {
         or $cr_deceased == 1 )
     {
         $decision->{deceased} = 1;
-        return $decision;
     }
 
     $report_summary{Fraud} ||= 0;
     if ( $report_summary{Fraud} == 1 ) {
         $decision->{fraud} = 1;
-        return $decision;
     }
 
     # check if client is age verified
@@ -391,9 +389,6 @@ sub _get_result_proveid {
       || 0;
     if ( $kyc_dob or $cr_total ) {
         $decision->{age_verified} = 1;
-    }
-    else {
-        return $decision;
     }
 
     # check if client is in any suspicious list
@@ -405,20 +400,18 @@ sub _get_result_proveid {
       qw(BOEMatch PEPMatch OFACMatch CIFASMatch);
 
     if (@matches) {
-        if ( grep { /^(BOEMatch|PEPMatch|OFACMatch|CIFASMatch)$/ } @matches ) {
+        my @hard_fails = grep { $f = $_; 
+                                grep { "${f}Match" eq $_ } @matches } 
+                         qw(BOE PEP OFAC CIFAS);
+        $decision->{$_} = 1 for @hard_fails;
+        $decision->{deny} = 1 if @hard_fails;
 
-            # BOEMatch PEPMatch OFAC and CIFAS are hard failures and need manual verification
-            delete $decision->{age_verified};
-            $decision->{deny} = 1;
-        }
         $decision->{matches} = \@matches;
-        return $decision;
     }
 
     # if client is in Directors list, we should not fully authenticate him
     if ( $report_summary{Directors} ) {
-        $decision->{matches} = ['Directors'];
-        return $decision;
+        $decision->{matches} = [ @{$decision->{matches}, 'Directors' ];
     }
 
     # check if client can be fully authenticated
