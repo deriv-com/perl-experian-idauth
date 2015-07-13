@@ -392,7 +392,12 @@ sub _get_result_proveid {
     }
 
     # check if client is in any suspicious list
-    # we don't care about: NoOfCCJ, COAMatch
+    # we don't care about: COAMatch
+    #
+    # Add NoOfCCJ separately since we don't fail that one.
+
+    $decision->{CCJ} = 1 if $credit_reference->findvalue('NoOfCCJ')
+    
     my @matches =
       map  { $_->[0] }
       grep { $_->[1] > 0 }
@@ -411,6 +416,7 @@ sub _get_result_proveid {
 
     # if client is in Directors list, we should not fully authenticate him
     if ( $report_summary{Directors} ) {
+        $decision->{director} = 1;
         $decision->{matches} = [ @{$decision->{matches}}, 'Directors' ];
     }
 

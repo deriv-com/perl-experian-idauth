@@ -2401,62 +2401,45 @@ ok(not(exists $result->{deceased}), 'Age only 4, not deceased');
 is($result->{deny}, 1, 'Age only 4, denied');
 is($result->{OFAC}, 1, 'Age only 4, OFAC flagged');
 
+#Change of address handling
+$result = examine($age_only_5),
+is($result->{age_verified}, 1, "Age only 5, age verified");
+is($result->{fully_authenticated}, 1, 'Age only 5, Fully authenticated');
+ok(not(exists $result->{deceased}), 'Age only 5, not deceased');
+ok(not(exists $result->{deny}), 'Age only 5, not denied');
 
-eq_or_diff(
-    examine($age_only_4),
-    {
-        deny    => 1,
-        matches => ['OFACMatch'],
-    },
-    "    if OFACMatch is set, then fail verification"
-);
+$result = examine($age_only_6),
+is($result->{age_verified}, 1, "Age only 6, age verified");
+is($result->{fully_authenticated}, 1, 'Age only 6, Fully authenticated');
+ok(not(exists $result->{deceased}), 'Age only 6, not deceased');
+is($result->{deny}, 1, 'Age only 6, denied');
+is($result->{CIFAS}, 1, 'Age only 6, CIFAS flagged');
 
-eq_or_diff(
-    examine($age_only_5),
-    {
-        age_verified        => 1,
-        fully_authenticated => 1,
-    },
-    "    ignore COAMatch if set, fully authenticate if possible"
-);
+$result = examine($age_only_7),
+is($result->{age_verified}, 1, "Age only 7, age verified");
+is($result->{fully_authenticated}, 1, 'Age only 7, Fully authenticated');
+is($result->{CCJ}, 1, 'Age only 7, Has court judgements');
+ok(not(exists $result->{deceased}), 'Age only 7, not deceased');
+ok(not(exists $result->{deny}), 'Age only 7, not denied');
 
-eq_or_diff(
-    examine($age_only_6),
-    {
-        deny    => 1,
-        matches => ['CIFASMatch'],
-    },
-    "    if CIFASMatch is set, then fail verification"
-);
+$result = examine($age_only_8),
+is($result->{age_verified}, 1, "Age only 8, age verified");
+is($result->{fully_authenticated}, 1, 'Age only 8, Fully authenticated');
+is($result->{Director}, 1, 'Age only 8, Is Director');
+ok(not(exists $result->{deceased}), 'Age only 8, not deceased');
+ok(not(exists $result->{deny}), 'Age only 8, not denied');
 
-eq_or_diff(
-    examine($age_only_7),
-    {
-        age_verified        => 1,
-        fully_authenticated => 1,
-    },
-    "    ignore CCJs if set, fully authenticate if possible"
-);
+$result = examine($age_only_9),
+is($result->{age_verified}, 1, "Age only 9, age verified");
+ok(not(exists $result->{fully_authenticated}), 1, 'Age only 9, not authenticated');
+ok(not(exists $result->{deceased}), 'Age only 9, not deceased');
+ok(not(exists $result->{deny}), 'Age only 9, not denied');
 
-eq_or_diff(
-    examine($age_only_8),
-    {
-        age_verified => 1,
-        matches      => ['Directors'],
-    },
-    "    if Director, then age_verified only"
-);
-
-eq_or_diff(examine($age_only_9), {age_verified => 1,}, "If KYC Summary is 1, then age_verified");
-
-eq_or_diff(
-    examine($age_only_10),
-    {
-        age_verified        => 1,
-        fully_authenticated => 1,
-    },
-    "If Total number of verifications in Credit reference is 2, then fully_authenticated"
-);
+$result = examine($age_only_10),
+is($result->{age_verified}, 1, "Age only 10, age verified");
+is($result->{fully_authenticated}, 1, 'Age only 10, Fully authenticated');
+ok(not(exists $result->{deceased}), 'Age only 10, not deceased');
+ok(not(exists $result->{deny}), 'Age only 10, not denied');
 
 Test::NoWarnings::had_no_warnings();
 done_testing;
