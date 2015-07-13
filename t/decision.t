@@ -2425,7 +2425,7 @@ ok(not(exists $result->{deny}), 'Age only 7, not denied');
 $result = examine($age_only_8),
 is($result->{age_verified}, 1, "Age only 8, age verified");
 is($result->{fully_authenticated}, 1, 'Age only 8, Fully authenticated');
-is($result->{Director}, 1, 'Age only 8, Is Director');
+is($result->{director}, 1, 'Age only 8, Is Director');
 ok(not(exists $result->{deceased}), 'Age only 8, not deceased');
 ok(not(exists $result->{deny}), 'Age only 8, not denied');
 
