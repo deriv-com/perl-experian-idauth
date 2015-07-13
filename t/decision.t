@@ -1503,7 +1503,7 @@ ok(not exists $result->{fully_authenticated}, 'not authenticated');
 $result = examine($not_deceased),
 is($result->{age_verified}, 1, "Not deceased, age verified");
 is($result->{fully_authenticated}, 1, 'Not deceased, Fully authenticated');
-ok(not exists $result->{deceased}, 'Not deceased, not deceased'
+ok(not exists $result->{deceased}, 'Not deceased, not deceased');
 ok(not exists $result->{deny}, 'Not deceased, not denied');
 
 
