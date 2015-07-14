@@ -2,7 +2,7 @@ package Experian::IDAuth;
 use strict;
 use warnings;
 
-our $VERSION = '1.8';
+our $VERSION = '2.0.0';
 
 use Locale::Country;
 use Path::Tiny;
@@ -358,7 +358,7 @@ sub _get_result_proveid {
 
     return unless $credit_reference and $kyc_summary;
 
-    my $decision = {};
+    my $decision = { matches => []};
 
     # check if client has died or fraud
     my $cr_deceased = $credit_reference->findvalue('DeceasedMatch') || 0;
@@ -376,13 +376,11 @@ sub _get_result_proveid {
         or $cr_deceased == 1 )
     {
         $decision->{deceased} = 1;
-        return $decision;
     }
 
     $report_summary{Fraud} ||= 0;
     if ( $report_summary{Fraud} == 1 ) {
         $decision->{fraud} = 1;
-        return $decision;
     }
 
     # check if client is age verified
@@ -392,12 +390,14 @@ sub _get_result_proveid {
     if ( $kyc_dob or $cr_total ) {
         $decision->{age_verified} = 1;
     }
-    else {
-        return $decision;
-    }
 
     # check if client is in any suspicious list
-    # we don't care about: NoOfCCJ, COAMatch
+    # we don't care about: COAMatch
+    #
+    # Add NoOfCCJ separately since we don't fail that one.
+
+    $decision->{CCJ} = 1 if $credit_reference->findvalue('NoOfCCJ');
+    
     my @matches =
       map  { $_->[0] }
       grep { $_->[1] > 0 }
@@ -405,20 +405,19 @@ sub _get_result_proveid {
       qw(BOEMatch PEPMatch OFACMatch CIFASMatch);
 
     if (@matches) {
-        if ( grep { /^(BOEMatch|PEPMatch|OFACMatch|CIFASMatch)$/ } @matches ) {
+        my @hard_fails = grep { my $f = $_; 
+                                grep { "${f}Match" eq $_ } @matches } 
+                         qw(BOE PEP OFAC CIFAS);
+        $decision->{$_} = 1 for @hard_fails;
+        $decision->{deny} = 1 if @hard_fails;
 
-            # BOEMatch PEPMatch OFAC and CIFAS are hard failures and need manual verification
-            delete $decision->{age_verified};
-            $decision->{deny} = 1;
-        }
         $decision->{matches} = \@matches;
-        return $decision;
     }
 
     # if client is in Directors list, we should not fully authenticate him
     if ( $report_summary{Directors} ) {
-        $decision->{matches} = ['Directors'];
-        return $decision;
+        $decision->{director} = 1;
+        $decision->{matches} = [ @{$decision->{matches}}, 'Directors' ];
     }
 
     # check if client can be fully authenticated
@@ -587,7 +586,7 @@ Experian::IDAuth - Experian's ID Authenticate service
 
 =head1 VERSION
 
-Version 1.8
+Version 2.0.0
 
 =head1 DESCRIPTION
 
@@ -641,14 +640,19 @@ Then use this module.
         die;
     }
 
-    if ($prove_id_result->{fully_authenticated}) {
-        # client successfully authenticated
-    }
     if ($prove_id_result->{age_verified}) {
         # client's age is verified
     }
     if ($prove_id_result->{deceased} || $prove_id_result->{fraud}) {
         # client flagged as deceased or fraud
+    }
+    if ($prove_id_result->{deny}) {
+        # client on any of PEP, OFAC, or BOE list
+        # you can check $prove_id_result->{PEP} etc if you want more detail
+    }
+    if ($prove_id_result->{fully_authenticated}) {
+        # client successfully authenticated, 
+        # DOES NOT MEAN NO CONCERNS
     }
 
     # CheckID is a more simpler version and can be used if ProveID_KYC fails
@@ -664,6 +668,26 @@ Then use this module.
     if ($check_id->get_result()) {
         # client successfully authenticated
     }
+
+=head1 CHANGES FROM 1.X
+
+The 2.x series of this module provides some significant changes from 1.x. 
+
+With 1.x, fully_authenticated could only suggest that there were no concerns
+and that the client was fully authenticated.  Now, we set this in addition to
+any failure fields.  For this reason it is important to handle failures
+first and then check this response attribute.  Note that the response attribute
+also now shows the full list (not the first) set of possible concerns.
+
+Therefore:
+
+=over
+
+=item One cannot assume that fully_authenticated means "success" and
+
+=item Reasons for failure are no longer exclusive.
+
+=back
 
 =head1 AUTHOR
 
