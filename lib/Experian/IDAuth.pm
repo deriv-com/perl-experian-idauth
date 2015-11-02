@@ -593,7 +593,7 @@ Version 2.1
 =head1 DESCRIPTION
 
 This module provides an interface to Experian's Identity Authenticate service.
-http://www.experian.co.uk/identity-and-fraud/products/authenticate.html
+L<http://www.experian.co.uk/identity-and-fraud/products/authenticate.html>
 
 First create a subclass of this module to override the defaults method
 with your own data.
