@@ -2,7 +2,7 @@ package Experian::IDAuth;
 use strict;
 use warnings;
 
-our $VERSION = '2.0.0';
+our $VERSION = '2.1';
 
 use Locale::Country;
 use Path::Tiny;
@@ -387,6 +387,8 @@ sub _get_result_proveid {
     my $kyc_dob = $kyc_summary->findvalue('DateOfBirth/Count') || 0;
     my $cr_total = $credit_reference->findvalue('TotalNumberOfVerifications')
       || 0;
+    $decision->{num_verifications} = $cr_total;
+
     if ( $kyc_dob or $cr_total ) {
         $decision->{age_verified} = 1;
     }
@@ -586,12 +588,12 @@ Experian::IDAuth - Experian's ID Authenticate service
 
 =head1 VERSION
 
-Version 2.0.0
+Version 2.1
 
 =head1 DESCRIPTION
 
 This module provides an interface to Experian's Identity Authenticate service.
-http://www.experian.co.uk/identity-and-fraud/products/authenticate.html
+L<http://www.experian.co.uk/identity-and-fraud/products/authenticate.html>
 
 First create a subclass of this module to override the defaults method
 with your own data.
@@ -653,6 +655,9 @@ Then use this module.
     if ($prove_id_result->{fully_authenticated}) {
         # client successfully authenticated, 
         # DOES NOT MEAN NO CONCERNS
+
+        # check number of credit verifications done
+        print "Number of credit verifications: " . $prove_id_result->{num_verifications} . "\n";
     }
 
     # CheckID is a more simpler version and can be used if ProveID_KYC fails
@@ -669,25 +674,19 @@ Then use this module.
         # client successfully authenticated
     }
 
-=head1 CHANGES FROM 1.X
+=head1 METHODS
 
-The 2.x series of this module provides some significant changes from 1.x. 
+=head2 new()
 
-With 1.x, fully_authenticated could only suggest that there were no concerns
-and that the client was fully authenticated.  Now, we set this in addition to
-any failure fields.  For this reason it is important to handle failures
-first and then check this response attribute.  Note that the response attribute
-also now shows the full list (not the first) set of possible concerns.
+    Creates a new object of your derived class. The parent class should contain most of the attributes required for new(). But you can set search_option to either ProveID_KYC or CheckID
 
-Therefore:
+=head2 get_result()
 
-=over
+    Return the Experian results as a hashref
 
-=item One cannot assume that fully_authenticated means "success" and
+=head2 save_pdf_result()
 
-=item Reasons for failure are no longer exclusive.
-
-=back
+    Save the Experian credentials as a PDF
 
 =head1 AUTHOR
 
@@ -743,7 +742,7 @@ L<http://search.cpan.org/dist/Experian-IDAuth/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2014 binary.com.
+Copyright 2014,2015 binary.com.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the the Artistic License (2.0). You may obtain a
