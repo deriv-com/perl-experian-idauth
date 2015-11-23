@@ -584,15 +584,11 @@ with your own data.
     use warnings;
     use base 'Experian::IDAuth';
 
-    # if you're using a logger
-    use Log::Log4perl;
-
     sub defaults {
         my $self = shift;
 
         return (
             $self->SUPER::defaults,
-            logger        => Log::Log4perl::get_logger,
             username      => 'my_user',
             password      => 'my_pass',
             residence     => $residence,
