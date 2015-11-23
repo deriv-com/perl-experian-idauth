@@ -2,7 +2,7 @@ package Experian::IDAuth;
 use strict;
 use warnings;
 
-our $VERSION = '2.0.0';
+our $VERSION = '2.2';
 
 use Locale::Country;
 use Path::Tiny;
@@ -344,7 +344,7 @@ sub _get_result_proveid {
 
     return unless $credit_reference and $kyc_summary;
 
-    my $decision = {};
+    my $decision = { matches => []};
 
     # check if client has died or fraud
     my $cr_deceased = $credit_reference->findvalue('DeceasedMatch') || 0;
@@ -362,28 +362,30 @@ sub _get_result_proveid {
         or $cr_deceased == 1 )
     {
         $decision->{deceased} = 1;
-        return $decision;
     }
 
     $report_summary{Fraud} ||= 0;
     if ( $report_summary{Fraud} == 1 ) {
         $decision->{fraud} = 1;
-        return $decision;
     }
 
     # check if client is age verified
     my $kyc_dob = $kyc_summary->findvalue('DateOfBirth/Count') || 0;
     my $cr_total = $credit_reference->findvalue('TotalNumberOfVerifications')
       || 0;
+    $decision->{num_verifications} = $cr_total;
+
     if ( $kyc_dob or $cr_total ) {
         $decision->{age_verified} = 1;
     }
-    else {
-        return $decision;
-    }
 
     # check if client is in any suspicious list
-    # we don't care about: NoOfCCJ, COAMatch
+    # we don't care about: COAMatch
+    #
+    # Add NoOfCCJ separately since we don't fail that one.
+
+    $decision->{CCJ} = 1 if $credit_reference->findvalue('NoOfCCJ');
+    
     my @matches =
       map  { $_->[0] }
       grep { $_->[1] > 0 }
@@ -391,20 +393,19 @@ sub _get_result_proveid {
       qw(BOEMatch PEPMatch OFACMatch CIFASMatch);
 
     if (@matches) {
-        if ( grep { /^(BOEMatch|PEPMatch|OFACMatch|CIFASMatch)$/ } @matches ) {
+        my @hard_fails = grep { my $f = $_; 
+                                grep { "${f}Match" eq $_ } @matches } 
+                         qw(BOE PEP OFAC CIFAS);
+        $decision->{$_} = 1 for @hard_fails;
+        $decision->{deny} = 1 if @hard_fails;
 
-            # BOEMatch PEPMatch OFAC and CIFAS are hard failures and need manual verification
-            delete $decision->{age_verified};
-            $decision->{deny} = 1;
-        }
         $decision->{matches} = \@matches;
-        return $decision;
     }
 
     # if client is in Directors list, we should not fully authenticate him
     if ( $report_summary{Directors} ) {
-        $decision->{matches} = ['Directors'];
-        return $decision;
+        $decision->{director} = 1;
+        $decision->{matches} = [ @{$decision->{matches}}, 'Directors' ];
     }
 
     # check if client can be fully authenticated
@@ -568,12 +569,12 @@ Experian::IDAuth - Experian's ID Authenticate service
 
 =head1 VERSION
 
-Version 1.8
+Version 2.1
 
 =head1 DESCRIPTION
 
 This module provides an interface to Experian's Identity Authenticate service.
-http://www.experian.co.uk/identity-and-fraud/products/authenticate.html
+L<http://www.experian.co.uk/identity-and-fraud/products/authenticate.html>
 
 First create a subclass of this module to override the defaults method
 with your own data.
@@ -622,14 +623,22 @@ Then use this module.
         die;
     }
 
-    if ($prove_id_result->{fully_authenticated}) {
-        # client successfully authenticated
-    }
     if ($prove_id_result->{age_verified}) {
         # client's age is verified
     }
     if ($prove_id_result->{deceased} || $prove_id_result->{fraud}) {
         # client flagged as deceased or fraud
+    }
+    if ($prove_id_result->{deny}) {
+        # client on any of PEP, OFAC, or BOE list
+        # you can check $prove_id_result->{PEP} etc if you want more detail
+    }
+    if ($prove_id_result->{fully_authenticated}) {
+        # client successfully authenticated, 
+        # DOES NOT MEAN NO CONCERNS
+
+        # check number of credit verifications done
+        print "Number of credit verifications: " . $prove_id_result->{num_verifications} . "\n";
     }
 
     # CheckID is a more simpler version and can be used if ProveID_KYC fails
@@ -645,6 +654,20 @@ Then use this module.
     if ($check_id->get_result()) {
         # client successfully authenticated
     }
+
+=head1 METHODS
+
+=head2 new()
+
+    Creates a new object of your derived class. The parent class should contain most of the attributes required for new(). But you can set search_option to either ProveID_KYC or CheckID
+
+=head2 get_result()
+
+    Return the Experian results as a hashref
+
+=head2 save_pdf_result()
+
+    Save the Experian credentials as a PDF
 
 =head1 AUTHOR
 
@@ -700,7 +723,7 @@ L<http://search.cpan.org/dist/Experian-IDAuth/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2014 binary.com.
+Copyright 2014,2015 binary.com.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the the Artistic License (2.0). You may obtain a

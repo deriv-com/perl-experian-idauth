@@ -312,6 +312,7 @@ warning_like( sub {
 
    ok ($prove_id_result->{fully_authenticated}, 'fully authenticated');
    ok ($prove_id_result->{age_verified}, 'age verified');
+   ok ($prove_id_result->{num_verifications} == 3, 'TotalNumberOfVerifications');
 }, qr/not a pdf/, 'Bad pdf warning');
 
 Test::NoWarnings::had_no_warnings();
