@@ -40,18 +40,6 @@ sub set {
     return $self;
 }
 
-sub logi {
-    my ( $self, $msg ) = @_;
-
-    if ( $self->{logger} ) {
-        return $self->{logger}->info($msg);
-    }
-
-    return;
-}
-
-sub get_result {
-    my $self = shift;
     $self->_do_192_authentication || return;
     for ( $self->{search_option} ) {
         /ProveID_KYC/ && return $self->_get_result_proveid;
@@ -70,7 +58,7 @@ sub save_pdf_result {
 
     # 192 reference which we should pass to 192 to download the result
     my $our_ref = $result->{OurReference} || do {
-        $self->logi("No 'OurReference'; invalid save-pdf request");
+        warn "No 'OurReference'; invalid save-pdf request";
         return;
     };
 
@@ -99,7 +87,7 @@ sub save_pdf_result {
         1;
     } || do {
         my $err = $@;
-        $self->logi("errors downloading pdf: $err");
+        warn "errors downloading pdf: $err";
         return;
     };
 
@@ -116,7 +104,7 @@ sub save_pdf_result {
     # Check if the downloaded file is a pdf.
     my $file_type = qx(file $file_pdf);
     if ( $file_type !~ /PDF/ ) {
-        $self->logi("discarding downloaded file $file_pdf, not a pdf!");
+        warn "discarding downloaded file $file_pdf, not a pdf!";
         unlink $file_pdf;
         return;
     }
@@ -185,9 +173,6 @@ sub _send_request {
     ( my $request1 = $request ) =~
       s/\<Password\>.+\<\/Password\>/\<Password\>XXXXXXX<\/Password\>/;
 
-    # Log request
-    $self->logi( "REQUEST: " . $self->{client_id} . " : $request1" );
-
     # Create soap object
     my $soap =
       SOAP::Lite->readable(1)->uri( $self->{api_uri} )
@@ -202,12 +187,11 @@ sub _send_request {
     # Do it
     my $som = $soap->search($request);
     if ( $som->fault ) {
-        $self->logi( "ERRTEXT: " . $som->fault->faultstring );
+        warn "ERRTEXT: " . $som->fault->faultstring;
         return;
     }
 
     my $result = $som->result;
-    $self->logi("RESULTS: $result");
     $self->{result_as_xml} = $result;
 
     return 1;
@@ -227,9 +211,9 @@ sub _build_country_code_tag {
         LOCALE_CODE_ALPHA_2, LOCALE_CODE_ALPHA_3 );
 
     if ( not $three_digit_country ) {
-        $self->logi( "Client "
+        warn "Client "
               . $self->{client_id}
-              . " could not get country from residence [$two_digit_country]" );
+              . " could not get country from residence [$two_digit_country]";
         return;
     }
 
@@ -240,7 +224,7 @@ sub _build_person_tag {
     my $self = shift;
 
     my $dob = $self->{date_of_birth} || do {
-        $self->logi( "No date of birth for " . $self->{client_id} );
+        warn "No date of birth for " . $self->{client_id};
         return;
     };
 
@@ -258,7 +242,7 @@ sub _build_person_tag {
         }
     }
     else {
-        $self->logi( "Invalid date of birth [$dob] for " . $self->{client_id} );
+        warn "Invalid date of birth [$dob] for " . $self->{client_id};
         return;
     }
 
@@ -337,7 +321,7 @@ sub _get_result_proveid {
 
     my $twig = eval { XML::Twig->parse($report) } || do {
         my $err = $@;
-        $self->logi("could not parse xml report: $err");
+        warn "could not parse xml report: $err";
         return;
     };
 
@@ -440,7 +424,7 @@ sub _get_result_checkid {
 
     # Convert xml to hashref
     my $result = $self->_xml_as_hash || do {
-        $self->logi('no xml result');
+        warn 'no xml result';
         return;
     };
 
@@ -513,17 +497,13 @@ sub _do_192_authentication {
 
     my $force_recheck = $self->{force_recheck} || 0;
 
-    $self->logi( "Attempt 192 authentication for "
-          . $self->{client_id}
-          . " via $search_option" );
-
     my $residence = $self->{residence};
 
     # check for 192 supported countries
     unless ( $self->valid_country( $self->{residence} ) ) {
-        $self->logi( "Invalid residence: "
+        warn "Invalid residence: "
               . $self->{client_id}
-              . ", Residence $residence" );
+              . ", Residence $residence";
         return;
     }
 
@@ -544,7 +524,7 @@ sub _do_192_authentication {
 
     eval { $self->_send_request } || do {
         my $err = $@ || '?';
-        $self->logi("could not send pdf request: $err");
+        warn "could not send pdf request: $err";
         return;
     };
 
@@ -557,8 +537,7 @@ sub _do_192_authentication {
     Path::Tiny::path($file_xml)->spew( $self->{result_as_xml} );
 
     if ( not -e $file_xml ) {
-        $self->logi(
-            "Couldn't save 192.com xml result for " . $self->{client_id} );
+        warn "Couldn't save 192.com xml result for " . $self->{client_id};
         return;
     }
 
