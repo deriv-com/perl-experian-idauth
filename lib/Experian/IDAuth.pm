@@ -40,6 +40,8 @@ sub set {
     return $self;
 }
 
+sub get_result {
+    my $self = shift;
     $self->_do_192_authentication || return;
     for ( $self->{search_option} ) {
         /ProveID_KYC/ && return $self->_get_result_proveid;
