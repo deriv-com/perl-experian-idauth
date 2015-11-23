@@ -308,11 +308,12 @@ my $prove_id = Experian::IDAuth->new(
     premise       => 'premise',
 );
 
-my $prove_id_result = $prove_id->get_result();
-my $xml_report = $prove_id->get_192_xml_report();
+warning_like( sub {
+    my $prove_id_result = $prove_id->get_result();
+    my $xml_report = $prove_id->get_192_xml_report();
 
-ok ($xml_report eq $xml, 'get_192_xml_report');
-
+    ok ($xml_report eq $xml, 'get_192_xml_report');
+}, qr/not a pdf/, 'bad pdf warning');
 Test::NoWarnings::had_no_warnings();
 done_testing;
 
