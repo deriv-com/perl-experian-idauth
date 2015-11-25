@@ -307,9 +307,11 @@ my $prove_id = Experian::IDAuth->new(
     premise       => 'premise',
 );
 
-my $prove_id_result = $prove_id->get_result();
+warning_like( sub {
+  my $prove_id_result = $prove_id->get_result();
 
-ok ($prove_id_result == 0, 'check_id failed');
+  ok ($prove_id_result == 0, 'check_id failed');
+}, qr/not a pdf/, 'bad pdf warning');
 
 Test::NoWarnings::had_no_warnings();
 done_testing;
