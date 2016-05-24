@@ -13,15 +13,15 @@ before_install:
     - build-perl
     - perl -V
     # install prereqs
-    - "cpanm Locale::Country"
-    - "cpanm Path::Tiny"
-    - "cpanm WWW::Mechanize"
-    - "cpanm XML::Simple"
-    - "cpanm XML::Twig"
-    - "cpanm SOAP::Lite"
-    - "cpanm IO::Socket"
-    - "cpanm Test::MockModule"
-    - "cpanm Devel::Cover::Report::Coveralls"
+    - "cpanm -n Locale::Country"
+    - "cpanm -n Path::Tiny"
+    - "cpanm -n WWW::Mechanize"
+    - "cpanm -n XML::Simple"
+    - "cpanm -n XML::Twig"
+    - "cpanm -n SOAP::Lite"
+    - "cpanm -n IO::Socket"
+    - "cpanm -n Test::MockModule"
+    - "cpanm -n Devel::Cover::Report::Coveralls"
 script:
     perl Makefile.PL && make test && cover -test -report coveralls
 
