@@ -21,6 +21,7 @@ before_install:
     - "cpanm -n SOAP::Lite"
     - "cpanm -n IO::Socket"
     - "cpanm -n Test::MockModule"
+    - "cpanm -n Test::NoWarnings"
     - "cpanm -n Devel::Cover::Report::Coveralls"
 script:
     perl Makefile.PL && make test && cover -test -report coveralls
