@@ -1,19 +1,28 @@
 language: perl
 perl:
+    - "5.24"
+    - "5.22"
+    - "5.20"
     - "5.18"
     - "5.16"
     - "5.14"
     - "5.12"
 before_install:
+    - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
+    - source ~/travis-perl-helpers/init
+    - build-perl
+    - perl -V
     # install prereqs
-    - "cpanm Locale::Country"
-    - "cpanm Path::Tiny"
-    - "cpanm WWW::Mechanize"
-    - "cpanm XML::Simple"
-    - "cpanm XML::Twig"
-    - "cpanm SOAP::Lite"
-    - "cpanm IO::Socket"
-    - "cpanm Test::MockModule"
-    - "cpanm Devel::Cover::Report::Coveralls"
+    - "cpanm -n Locale::Country"
+    - "cpanm -n Path::Tiny"
+    - "cpanm -n WWW::Mechanize"
+    - "cpanm -n XML::Simple"
+    - "cpanm -n XML::Twig"
+    - "cpanm -n SOAP::Lite"
+    - "cpanm -n IO::Socket"
+    - "cpanm -n Test::MockModule"
+    - "cpanm -n Test::NoWarnings"
+    - "cpanm -n Devel::Cover::Report::Coveralls"
 script:
     perl Makefile.PL && make test && cover -test -report coveralls
+
