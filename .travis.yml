@@ -24,7 +24,8 @@ before_install:
     - "cpanm -n IO::Socket"
     - "cpanm -n Test::MockModule"
     - "cpanm -n Test::NoWarnings"
-    - "cpanm -n Devel::Cover::Report::Coveralls"
+    - "cpanm -n Test::Requires::Git"
+    - "cpanm -n Devel::Cover::Report::Codecov"
 script:
-    perl Makefile.PL && make test && cover -test -report coveralls
+    perl Makefile.PL && make test && cover -test -report codecov
 
