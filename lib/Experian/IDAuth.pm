@@ -665,6 +665,30 @@ Then use this module.
 
     Save the Experian credentials as a PDF
 
+=head2 defaults()
+
+    Return default value
+
+=head2 get_192_xml_report()
+
+    Return 192 xml report
+
+=head2 has_done_request()
+
+    Check the request finished or not
+
+=head2 has_downloaded_pdf
+
+    Check the file is downloaded an is a pdf file
+
+=head2 set
+
+    set attributes of object
+
+=head2 valid_country
+
+    Check a country is valid
+
 =head1 AUTHOR
 
 binary.com, C<perl at binary.com>
