@@ -385,7 +385,7 @@ sub _get_result_proveid {
     # Add NoOfCCJ separately since we don't fail that one.
 
     $decision->{CCJ} = 1 if $credit_reference->findvalue('NoOfCCJ');
-    
+
     my @matches =
       map  { $_->[0] }
       grep { $_->[1] > 0 }
@@ -630,7 +630,7 @@ Then use this module.
         # you can check $prove_id_result->{PEP} etc if you want more detail
     }
     if ($prove_id_result->{fully_authenticated}) {
-        # client successfully authenticated, 
+        # client successfully authenticated,
         # DOES NOT MEAN NO CONCERNS
 
         # check number of credit verifications done
