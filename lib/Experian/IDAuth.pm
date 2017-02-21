@@ -385,14 +385,6 @@ sub _get_result_proveid {
         $decision->{matches} = [@{$decision->{matches}}, 'Directors'];
     }
 
-    # check if client can be fully authenticated
-    my @kyc_two =
-        grep { $_ >= 2 }
-        map { $kyc_summary->findvalue("$_/Count") || 0 } qw(FullNameAndAddress SurnameAndAddress Address DateOfBirth);
-    if (@kyc_two or $cr_total >= 2) {
-        $decision->{fully_authenticated} = 1;
-    }
-
     return $decision;
 }
 
