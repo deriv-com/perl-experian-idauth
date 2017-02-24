@@ -12,7 +12,8 @@ my %WriteMakefileArgs = (
   "BUILD_REQUIRES" => {
     "Test::MockModule" => 0,
     "Test::More" => "0.94",
-    "Test::Most" => 0
+    "Test::Most" => 0,
+    "Test::NoWarnings" => 0
   },
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => "6.48"
@@ -38,7 +39,7 @@ my %WriteMakefileArgs = (
     "Test::CheckDeps" => "0.010",
     "Test::More" => "0.94"
   },
-  "VERSION" => "2.3",
+  "VERSION" => "2.4",
   "test" => {
     "TESTS" => "t/*.t"
   }
@@ -58,6 +59,7 @@ my %FallbackPrereqs = (
   "Test::MockModule" => 0,
   "Test::More" => "0.94",
   "Test::Most" => 0,
+  "Test::NoWarnings" => 0,
   "WWW::Mechanize" => 0,
   "XML::Simple" => 0,
   "XML::Twig" => 0
