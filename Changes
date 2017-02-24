@@ -1,5 +1,5 @@
 {{$NEXT}}
-
+   Fix dependency of Test::NoWarnings
 2.3       2017-02-15 06:57:23+00:00 UTC
    switch to dzil
 
