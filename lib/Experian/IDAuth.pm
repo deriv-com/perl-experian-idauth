@@ -514,10 +514,6 @@ sub _pdf_report_filename {
 
 Experian::IDAuth - Experian's ID Authenticate service
 
-=head1 VERSION
-
-Version 2.1
-
 =head1 DESCRIPTION
 
 This module provides an interface to Experian's Identity Authenticate service.
