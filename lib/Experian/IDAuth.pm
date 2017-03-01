@@ -2,7 +2,7 @@ package Experian::IDAuth;
 use strict;
 use warnings;
 
-our $VERSION = '2.4';
+our $VERSION = '2.41';
 
 use Locale::Country;
 use Path::Tiny;
@@ -513,10 +513,6 @@ sub _pdf_report_filename {
 =head1 NAME
 
 Experian::IDAuth - Experian's ID Authenticate service
-
-=head1 VERSION
-
-Version 2.1
 
 =head1 DESCRIPTION
 
