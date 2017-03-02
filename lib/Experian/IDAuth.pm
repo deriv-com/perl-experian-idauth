@@ -2,7 +2,7 @@ package Experian::IDAuth;
 use strict;
 use warnings;
 
-our $VERSION = '2.4';
+our $VERSION = '2.5';
 
 use Locale::Country;
 use Path::Tiny;
@@ -352,7 +352,7 @@ sub _get_result_proveid {
         || 0;
     $decision->{num_verifications} = $cr_total;
 
-    if ($kyc_dob or $cr_total) {
+    if ($kyc_dob and $cr_total) {
         $decision->{age_verified} = 1;
     }
 
