@@ -1580,7 +1580,7 @@ my $age_only_1 =<<EOD;
       <CreditReferenceSummary>
         <CreditReferenceDecision />
         <CreditReferenceScore />
-        <TotalNumberOfVerifications>0</TotalNumberOfVerifications>
+        <TotalNumberOfVerifications>1</TotalNumberOfVerifications>
         <OpenAccountsMatch>0</OpenAccountsMatch>
         <DateOfBirthMatch>0</DateOfBirthMatch>
         <ElectoralRollMatch>0</ElectoralRollMatch>
@@ -1665,7 +1665,7 @@ my $age_only_2 =<<EOD;
       <CreditReferenceSummary>
         <CreditReferenceDecision />
         <CreditReferenceScore />
-        <TotalNumberOfVerifications>0</TotalNumberOfVerifications>
+        <TotalNumberOfVerifications>1</TotalNumberOfVerifications>
         <OpenAccountsMatch>0</OpenAccountsMatch>
         <DateOfBirthMatch>0</DateOfBirthMatch>
         <ElectoralRollMatch>0</ElectoralRollMatch>
@@ -1750,7 +1750,7 @@ my $age_only_3 =<<EOD;
       <CreditReferenceSummary>
         <CreditReferenceDecision />
         <CreditReferenceScore />
-        <TotalNumberOfVerifications>0</TotalNumberOfVerifications>
+        <TotalNumberOfVerifications>1</TotalNumberOfVerifications>
         <OpenAccountsMatch>0</OpenAccountsMatch>
         <DateOfBirthMatch>0</DateOfBirthMatch>
         <ElectoralRollMatch>0</ElectoralRollMatch>
@@ -1835,7 +1835,7 @@ my $age_only_4 =<<EOD;
       <CreditReferenceSummary>
         <CreditReferenceDecision />
         <CreditReferenceScore />
-        <TotalNumberOfVerifications>0</TotalNumberOfVerifications>
+        <TotalNumberOfVerifications>1</TotalNumberOfVerifications>
         <OpenAccountsMatch>0</OpenAccountsMatch>
         <DateOfBirthMatch>0</DateOfBirthMatch>
         <ElectoralRollMatch>0</ElectoralRollMatch>
@@ -1920,7 +1920,7 @@ my $age_only_5 =<<EOD;
       <CreditReferenceSummary>
         <CreditReferenceDecision />
         <CreditReferenceScore />
-        <TotalNumberOfVerifications>0</TotalNumberOfVerifications>
+        <TotalNumberOfVerifications>1</TotalNumberOfVerifications>
         <OpenAccountsMatch>0</OpenAccountsMatch>
         <DateOfBirthMatch>0</DateOfBirthMatch>
         <ElectoralRollMatch>0</ElectoralRollMatch>
@@ -2005,7 +2005,7 @@ my $age_only_6 =<<EOD;
       <CreditReferenceSummary>
         <CreditReferenceDecision />
         <CreditReferenceScore />
-        <TotalNumberOfVerifications>0</TotalNumberOfVerifications>
+        <TotalNumberOfVerifications>1</TotalNumberOfVerifications>
         <OpenAccountsMatch>0</OpenAccountsMatch>
         <DateOfBirthMatch>0</DateOfBirthMatch>
         <ElectoralRollMatch>0</ElectoralRollMatch>
@@ -2090,7 +2090,7 @@ my $age_only_7 =<<EOD;
       <CreditReferenceSummary>
         <CreditReferenceDecision />
         <CreditReferenceScore />
-        <TotalNumberOfVerifications>0</TotalNumberOfVerifications>
+        <TotalNumberOfVerifications>1</TotalNumberOfVerifications>
         <OpenAccountsMatch>0</OpenAccountsMatch>
         <DateOfBirthMatch>0</DateOfBirthMatch>
         <ElectoralRollMatch>0</ElectoralRollMatch>
@@ -2175,7 +2175,7 @@ my $age_only_8 =<<EOD;
       <CreditReferenceSummary>
         <CreditReferenceDecision />
         <CreditReferenceScore />
-        <TotalNumberOfVerifications>0</TotalNumberOfVerifications>
+        <TotalNumberOfVerifications>1</TotalNumberOfVerifications>
         <OpenAccountsMatch>0</OpenAccountsMatch>
         <DateOfBirthMatch>0</DateOfBirthMatch>
         <ElectoralRollMatch>0</ElectoralRollMatch>
@@ -2260,7 +2260,7 @@ my $age_only_9 =<<EOD;
       <CreditReferenceSummary>
         <CreditReferenceDecision />
         <CreditReferenceScore />
-        <TotalNumberOfVerifications>0</TotalNumberOfVerifications>
+        <TotalNumberOfVerifications>1</TotalNumberOfVerifications>
         <OpenAccountsMatch>0</OpenAccountsMatch>
         <DateOfBirthMatch>0</DateOfBirthMatch>
         <ElectoralRollMatch>0</ElectoralRollMatch>
@@ -2306,7 +2306,7 @@ my $age_only_10 =<<EOD;
           <Count>0</Count>
         </Address>
         <DateOfBirth>
-          <Count>0</Count>
+          <Count>1</Count>
         </DateOfBirth>
         <Alerts>
           <Count>0</Count>
