@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+2.52      2017-03-02 09:42:39+00:00 UTC
           merge previous version
 2.51      2017-03-02 07:36:05+00:00 UTC
           remove VERSION from pod
