@@ -1,5 +1,6 @@
 #!/usr/bin/perl
-use strict; use warnings;
+use strict;
+use warnings;
 
 use Test::Most;
 use Test::MockModule;
@@ -8,7 +9,7 @@ require Test::NoWarnings;
 use Data::Dumper;
 
 use lib 'lib';
-use_ok( 'Experian::IDAuth' );
+use_ok('Experian::IDAuth');
 
 # clean up
 system "rm -rf /tmp/proveid/";
@@ -17,6 +18,7 @@ my $module = Test::MockModule->new('SOAP::Lite');
 
 # create a return object
 {
+
     package SOM;
 
     sub new {
@@ -31,7 +33,7 @@ my $module = Test::MockModule->new('SOAP::Lite');
     }
 
     sub result {
-my $xml =<<EOD;
+        my $xml = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <CountryCode>GBR</CountryCode>
@@ -293,7 +295,7 @@ my $som = SOM->new;
 $module->mock(search => $som);
 
 my $prove_id = Experian::IDAuth->new(
-    client_id      => '45',
+    client_id     => '45',
     search_option => 'ProveID_KYC',
     username      => 'my_user',
     password      => 'my_pass',
@@ -307,13 +309,17 @@ my $prove_id = Experian::IDAuth->new(
     premise       => 'premise',
 );
 
-warning_like( sub {
-   my $prove_id_result = $prove_id->get_result();
+warning_like(
+    sub {
+        my $prove_id_result = $prove_id->get_result();
 
-   ok ($prove_id_result->{fully_authenticated}, 'fully authenticated');
-   ok ($prove_id_result->{age_verified}, 'age verified');
-   ok ($prove_id_result->{num_verifications} == 3, 'TotalNumberOfVerifications');
-}, qr/not a pdf/, 'Bad pdf warning');
+        ok($prove_id_result->{fully_authenticated},    'fully authenticated');
+        ok($prove_id_result->{age_verified},           'age verified');
+        ok($prove_id_result->{num_verifications} == 3, 'TotalNumberOfVerifications');
+    },
+    qr/not a pdf/,
+    'Bad pdf warning'
+);
 
 Test::NoWarnings::had_no_warnings();
 done_testing;

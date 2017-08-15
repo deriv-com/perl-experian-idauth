@@ -1,5 +1,6 @@
 #!/usr/bin/perl
-use strict; use warnings;
+use strict;
+use warnings;
 
 use Test::Most;
 use Test::MockModule;
@@ -8,9 +9,9 @@ require Test::NoWarnings;
 use Data::Dumper;
 
 use lib 'lib';
-use_ok( 'Experian::IDAuth' );
+use_ok('Experian::IDAuth');
 
-my $tmp = $ENV{TEMP} || '/tmp'; # portability between windows and linux
+my $tmp = $ENV{TEMP} || '/tmp';    # portability between windows and linux
 
 unlink $_ for <"$tmp/proveid/*">;
 rmdir "$tmp/proveid/*";
@@ -20,6 +21,7 @@ my $xml;
 
 # create a return object
 {
+
     package SOM;
 
     sub new {
@@ -34,7 +36,7 @@ my $xml;
     }
 
     sub result {
-$xml =<<EOD;
+        $xml = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <CountryCode>GBR</CountryCode>
@@ -296,7 +298,7 @@ my $som = SOM->new;
 $module->mock(search => $som);
 
 my $prove_id = Experian::IDAuth->new(
-    client_id      => '45',
+    client_id     => '45',
     search_option => 'CheckID',
     username      => 'my_user',
     password      => 'my_pass',
@@ -310,12 +312,16 @@ my $prove_id = Experian::IDAuth->new(
     premise       => 'premise',
 );
 
-warning_like( sub {
-    my $prove_id_result = $prove_id->get_result();
-    my $xml_report = $prove_id->get_192_xml_report();
+warning_like(
+    sub {
+        my $prove_id_result = $prove_id->get_result();
+        my $xml_report      = $prove_id->get_192_xml_report();
 
-    ok ($xml_report eq $xml, 'get_192_xml_report');
-}, qr/not a pdf/, 'bad pdf warning');
+        ok($xml_report eq $xml, 'get_192_xml_report');
+    },
+    qr/not a pdf/,
+    'bad pdf warning'
+);
 Test::NoWarnings::had_no_warnings();
 done_testing;
 
