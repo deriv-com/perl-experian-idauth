@@ -4,17 +4,14 @@ use warnings;
 
 use Test::Most;
 use Test::MockModule;
+use Test::Warnings;
+use Path::Tiny;
 use SOAP::Lite;
-require Test::NoWarnings;
-use Data::Dumper;
 
-use lib 'lib';
-use_ok('Experian::IDAuth');
-
-# clean up
-system "rm -rf /tmp/proveid/";
+use Experian::IDAuth;
 
 my $module = Test::MockModule->new('SOAP::Lite');
+my $tmp_dir = Path::Tiny->tempdir(CLEANUP => 1);
 
 # create a return object
 {
@@ -307,6 +304,7 @@ my $prove_id = Experian::IDAuth->new(
     phone         => '34878123',
     email         => 'john.galt@gmail.com',
     premise       => 'premise',
+    folder        => $tmp_dir,
 );
 
 warning_like(
@@ -321,6 +319,5 @@ warning_like(
     'Bad pdf warning'
 );
 
-Test::NoWarnings::had_no_warnings();
 done_testing;
 

@@ -3,14 +3,17 @@ use strict;
 use warnings;
 
 use Test::Most;
-require Test::NoWarnings;
+use Test::Warnings;
+use Path::Tiny;
 
-use lib 'lib';
 use Experian::IDAuth;
+
+my $tmp_dir = Path::Tiny->tempdir(CLEANUP => 1);
 
 my $proveid = Experian::IDAuth->new(
     client        => {},
-    search_option => 'ProveID_KYC'
+    search_option => 'ProveID_KYC',
+    folder        => $tmp_dir,
 );
 
 sub examine {
@@ -2431,6 +2434,5 @@ is($result->{fully_authenticated}, 1, 'Age only 10, Fully authenticated');
 ok(not(exists $result->{deceased}), 'Age only 10, not deceased');
 ok(not(exists $result->{deny}),     'Age only 10, not denied');
 
-Test::NoWarnings::had_no_warnings();
 done_testing;
 

@@ -1,13 +1,14 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+
 use Test::More;
 use Test::Exception;
-use lib 'lib';
-use_ok('Experian::IDAuth');
+use Path::Tiny;
 
-# clean up
-system "rm -rf /tmp/proveid/";
+use Experian::IDAuth;
+
+my $tmp_dir = Path::Tiny->tempdir(CLEANUP => 1);
 
 my $prove_id = Experian::IDAuth->new(
     client_id     => '45',
@@ -22,6 +23,7 @@ my $prove_id = Experian::IDAuth->new(
     phone         => '34878123',
     email         => 'john.galt@gmail.com',
     premise       => 'premise',
+    folder        => $tmp_dir,
 );
 
 throws_ok(
