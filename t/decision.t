@@ -1,15 +1,19 @@
 #!/usr/bin/perl
-use strict; use warnings;
+use strict;
+use warnings;
 
 use Test::Most;
-require Test::NoWarnings;
+use Test::Warnings;
+use Path::Tiny;
 
-use lib 'lib';
 use Experian::IDAuth;
+
+my $tmp_dir = Path::Tiny->tempdir(CLEANUP => 1);
 
 my $proveid = Experian::IDAuth->new(
     client        => {},
-    search_option => 'ProveID_KYC'
+    search_option => 'ProveID_KYC',
+    folder        => $tmp_dir,
 );
 
 sub examine {
@@ -17,7 +21,7 @@ sub examine {
     $proveid->set(result_as_xml => $xml)->_get_result_proveid;
 }
 
-my $fully1 =<<EOD;
+my $fully1 = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <CountryCode>GBR</CountryCode>
@@ -269,7 +273,7 @@ my $fully1 =<<EOD;
 </Search>
 EOD
 
-my $not_authenticated =<<EOD;
+my $not_authenticated = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <CountryCode>GBR</CountryCode>
@@ -462,7 +466,7 @@ my $not_authenticated =<<EOD;
 </Search>
 EOD
 
-my $fully2 =<<EOD;
+my $fully2 = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <CountryCode>GBR</CountryCode>
@@ -655,7 +659,7 @@ my $fully2 =<<EOD;
 </Search>
 EOD
 
-my $not_deceased =<<EOD;
+my $not_deceased = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <CountryCode>GBR</CountryCode>
@@ -972,7 +976,7 @@ my $not_deceased =<<EOD;
 </Search>
 EOD
 
-my $deceased =<<EOD;
+my $deceased = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <CountryCode>GBR</CountryCode>
@@ -1289,9 +1293,9 @@ my $deceased =<<EOD;
 </Search>
 EOD
 
-# Note that here we're ignoring ConfidenceLevel in DeceasedRecord, 
+# Note that here we're ignoring ConfidenceLevel in DeceasedRecord,
 # cause DeceasedMatch is in CreditReferenceSummary
-my $cr_deceased =<<EOD;
+my $cr_deceased = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <Result>
@@ -1401,7 +1405,7 @@ my $cr_deceased =<<EOD;
 </Search>
 EOD
 
-my $fraud =<<EOD;
+my $fraud = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <Result>
@@ -1486,46 +1490,45 @@ my $fraud =<<EOD;
 EOD
 
 my $result = examine($fully1);
-is($result->{age_verified}, 1, "Fully 1, age verified");
+is($result->{age_verified},        1, "Fully 1, age verified");
 is($result->{fully_authenticated}, 1, 'Fully 1, Fully authenticated');
 ok(not(exists $result->{deny}), 'Fully 1, not denied');
 
 $result = examine($fully2);
-is($result->{age_verified}, 1, "Fully 2, age verified");
+is($result->{age_verified},        1, "Fully 2, age verified");
 is($result->{fully_authenticated}, 1, 'Fully 2, Fully authenticated');
 ok(not(exists $result->{deny}), 'Fully 2, not denied');
 
 $result = examine($not_authenticated);
-ok(not(exists $result->{deny}), 'not authenticated, not denied');
-ok(not(exists $result->{age_verified}), 'not authenticated, not age verified');
+ok(not(exists $result->{deny}),                'not authenticated, not denied');
+ok(not(exists $result->{age_verified}),        'not authenticated, not age verified');
 ok(not(exists $result->{fully_authenticated}), 'not authenticated');
 
-$result = examine($not_deceased),
-is($result->{age_verified}, 1, "Not deceased, age verified");
+$result = examine($not_deceased), is($result->{age_verified}, 1, "Not deceased, age verified");
 is($result->{fully_authenticated}, 1, 'Not deceased, Fully authenticated');
 ok(not(exists $result->{deceased}), 'Not deceased, not deceased');
-ok(not(exists $result->{deny}), 'Not deceased, not denied');
+ok(not(exists $result->{deny}),     'Not deceased, not denied');
 
 $result = examine($deceased);
-is($result->{age_verified}, 1, "deceased, age verified");
+is($result->{age_verified},        1, "deceased, age verified");
 is($result->{fully_authenticated}, 1, 'deceased, Fully authenticated');
-is($result->{deceased}, 1, 'deceased, deceased');
+is($result->{deceased},            1, 'deceased, deceased');
 ok(not(exists $result->{deny}), 'deceased, not denied');
 
 $result = examine($cr_deceased);
-is($result->{age_verified}, 1, "cr deceased, age verified");
+is($result->{age_verified},        1, "cr deceased, age verified");
 is($result->{fully_authenticated}, 1, 'cr deceased, Fully authenticated');
-is($result->{deceased}, 1, 'cr deceased, deceased');
+is($result->{deceased},            1, 'cr deceased, deceased');
 ok(not(exists $result->{deny}), 'cr deceased, not denied');
 
 $result = examine($fraud);
-is($result->{age_verified}, 1, "fraud, age verified");
+is($result->{age_verified},        1, "fraud, age verified");
 is($result->{fully_authenticated}, 1, 'fraud, Fully authenticated');
-is($result->{fraud}, 1, 'fraud, fraud');
+is($result->{fraud},               1, 'fraud, fraud');
 ok(not(exists $result->{deny}), 'fraud, not denied');
 
 # this one has 2 in KYCSummary, so should be fully authenticated
-my $age_only_1 =<<EOD;
+my $age_only_1 = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <Result>
@@ -1610,7 +1613,7 @@ my $age_only_1 =<<EOD;
 EOD
 
 # this one has PEPMatch, so should be only age verified, despite 2 in KYCSummary
-my $age_only_2 =<<EOD;
+my $age_only_2 = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <Result>
@@ -1695,7 +1698,7 @@ my $age_only_2 =<<EOD;
 EOD
 
 # this one has BOEMatch, so should be only age verified, despite 2 in KYCSummary
-my $age_only_3 =<<EOD;
+my $age_only_3 = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <Result>
@@ -1780,7 +1783,7 @@ my $age_only_3 =<<EOD;
 EOD
 
 # this one has OFACMatch, so should be only age verified, despite 2 in KYCSummary
-my $age_only_4 =<<EOD;
+my $age_only_4 = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <Result>
@@ -1865,7 +1868,7 @@ my $age_only_4 =<<EOD;
 EOD
 
 # this one has COAMatch, so should be only age verified, despite 2 in KYCSummary
-my $age_only_5 =<<EOD;
+my $age_only_5 = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <Result>
@@ -1950,7 +1953,7 @@ my $age_only_5 =<<EOD;
 EOD
 
 # this one has CIFASMatch, so should be only age verified, despite 2 in KYCSummary
-my $age_only_6 =<<EOD;
+my $age_only_6 = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <Result>
@@ -2035,7 +2038,7 @@ my $age_only_6 =<<EOD;
 EOD
 
 # this one has CIFASMatch, so should be only age verified, despite 2 in KYCSummary
-my $age_only_7 =<<EOD;
+my $age_only_7 = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <Result>
@@ -2120,7 +2123,7 @@ my $age_only_7 =<<EOD;
 EOD
 
 # this one is Director, so only age verified
-my $age_only_8 =<<EOD;
+my $age_only_8 = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <Result>
@@ -2205,7 +2208,7 @@ my $age_only_8 =<<EOD;
 EOD
 
 # this has 1 in KYCSummary, so should be age verified
-my $age_only_9 =<<EOD;
+my $age_only_9 = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <Result>
@@ -2290,7 +2293,7 @@ my $age_only_9 =<<EOD;
 EOD
 
 # this has 2 in Credit Reference, so fully authenticated
-my $age_only_10 =<<EOD;
+my $age_only_10 = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <Result>
@@ -2374,73 +2377,62 @@ my $age_only_10 =<<EOD;
 </Search>
 EOD
 
-$result = examine($age_only_1),
-is($result->{age_verified}, 1, "Age only 1, age verified");
+$result = examine($age_only_1), is($result->{age_verified}, 1, "Age only 1, age verified");
 is($result->{fully_authenticated}, 1, 'Age only 1, Fully authenticated');
 ok(not(exists $result->{deceased}), 'Age only 1, not deceased');
-ok(not(exists $result->{deny}), 'Age only 1, not denied');
+ok(not(exists $result->{deny}),     'Age only 1, not denied');
 
-$result = examine($age_only_2),
-is($result->{age_verified}, 1, "Age only 2, age verified");
+$result = examine($age_only_2), is($result->{age_verified}, 1, "Age only 2, age verified");
 is($result->{fully_authenticated}, 1, 'Age only 2, Fully authenticated');
 ok(not(exists $result->{deceased}), 'Age only 2, not deceased');
 is($result->{deny}, 1, 'Age only 2, denied');
-is($result->{PEP}, 1, 'Age only 2, PEP flagged');
+is($result->{PEP},  1, 'Age only 2, PEP flagged');
 
-$result = examine($age_only_3),
-is($result->{age_verified}, 1, "Age only 3, age verified");
+$result = examine($age_only_3), is($result->{age_verified}, 1, "Age only 3, age verified");
 is($result->{fully_authenticated}, 1, 'Age only 3, Fully authenticated');
 ok(not(exists $result->{deceased}), 'Age only 3, not deceased');
 is($result->{deny}, 1, 'Age only 3, denied');
-is($result->{BOE}, 1, 'Age only 3, BOE flagged');
+is($result->{BOE},  1, 'Age only 3, BOE flagged');
 
-$result = examine($age_only_4),
-is($result->{age_verified}, 1, "Age only 4, age verified");
+$result = examine($age_only_4), is($result->{age_verified}, 1, "Age only 4, age verified");
 is($result->{fully_authenticated}, 1, 'Age only 4, Fully authenticated');
 ok(not(exists $result->{deceased}), 'Age only 4, not deceased');
 is($result->{deny}, 1, 'Age only 4, denied');
 is($result->{OFAC}, 1, 'Age only 4, OFAC flagged');
 
 #Change of address handling
-$result = examine($age_only_5),
-is($result->{age_verified}, 1, "Age only 5, age verified");
+$result = examine($age_only_5), is($result->{age_verified}, 1, "Age only 5, age verified");
 is($result->{fully_authenticated}, 1, 'Age only 5, Fully authenticated');
 ok(not(exists $result->{deceased}), 'Age only 5, not deceased');
-ok(not(exists $result->{deny}), 'Age only 5, not denied');
+ok(not(exists $result->{deny}),     'Age only 5, not denied');
 
-$result = examine($age_only_6),
-is($result->{age_verified}, 1, "Age only 6, age verified");
+$result = examine($age_only_6), is($result->{age_verified}, 1, "Age only 6, age verified");
 is($result->{fully_authenticated}, 1, 'Age only 6, Fully authenticated');
 ok(not(exists $result->{deceased}), 'Age only 6, not deceased');
-is($result->{deny}, 1, 'Age only 6, denied');
+is($result->{deny},  1, 'Age only 6, denied');
 is($result->{CIFAS}, 1, 'Age only 6, CIFAS flagged');
 
-$result = examine($age_only_7),
-is($result->{age_verified}, 1, "Age only 7, age verified");
+$result = examine($age_only_7), is($result->{age_verified}, 1, "Age only 7, age verified");
 is($result->{fully_authenticated}, 1, 'Age only 7, Fully authenticated');
-is($result->{CCJ}, 1, 'Age only 7, Has court judgements');
+is($result->{CCJ},                 1, 'Age only 7, Has court judgements');
 ok(not(exists $result->{deceased}), 'Age only 7, not deceased');
-ok(not(exists $result->{deny}), 'Age only 7, not denied');
+ok(not(exists $result->{deny}),     'Age only 7, not denied');
 
-$result = examine($age_only_8),
-is($result->{age_verified}, 1, "Age only 8, age verified");
+$result = examine($age_only_8), is($result->{age_verified}, 1, "Age only 8, age verified");
 is($result->{fully_authenticated}, 1, 'Age only 8, Fully authenticated');
-is($result->{director}, 1, 'Age only 8, Is Director');
+is($result->{director},            1, 'Age only 8, Is Director');
 ok(not(exists $result->{deceased}), 'Age only 8, not deceased');
-ok(not(exists $result->{deny}), 'Age only 8, not denied');
+ok(not(exists $result->{deny}),     'Age only 8, not denied');
 
-$result = examine($age_only_9),
-is($result->{age_verified}, 1, "Age only 9, age verified");
+$result = examine($age_only_9), is($result->{age_verified}, 1, "Age only 9, age verified");
 ok(not(exists $result->{fully_authenticated}), 'Age only 9, not authenticated');
-ok(not(exists $result->{deceased}), 'Age only 9, not deceased');
-ok(not(exists $result->{deny}), 'Age only 9, not denied');
+ok(not(exists $result->{deceased}),            'Age only 9, not deceased');
+ok(not(exists $result->{deny}),                'Age only 9, not denied');
 
-$result = examine($age_only_10),
-is($result->{age_verified}, 1, "Age only 10, age verified");
+$result = examine($age_only_10), is($result->{age_verified}, 1, "Age only 10, age verified");
 is($result->{fully_authenticated}, 1, 'Age only 10, Fully authenticated');
 ok(not(exists $result->{deceased}), 'Age only 10, not deceased');
-ok(not(exists $result->{deny}), 'Age only 10, not denied');
+ok(not(exists $result->{deny}),     'Age only 10, not denied');
 
-Test::NoWarnings::had_no_warnings();
 done_testing;
 

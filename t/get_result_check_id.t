@@ -1,22 +1,21 @@
 #!/usr/bin/perl
-use strict; use warnings;
+use strict;
+use warnings;
 
 use Test::Most;
 use Test::MockModule;
+use Test::Warnings;
+use Path::Tiny;
 use SOAP::Lite;
-require Test::NoWarnings;
-use Data::Dumper;
 
-use lib 'lib';
-use_ok( 'Experian::IDAuth' );
+use Experian::IDAuth;
 
-# clean up
-system "rm -rf /tmp/proveid/";
-
+my $tmp_dir = Path::Tiny->tempdir(CLEANUP => 1);
 my $module = Test::MockModule->new('SOAP::Lite');
 
 # create a return object
 {
+
     package SOM;
 
     sub new {
@@ -31,7 +30,7 @@ my $module = Test::MockModule->new('SOAP::Lite');
     }
 
     sub result {
-my $xml =<<EOD;
+        my $xml = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <CountryCode>GBR</CountryCode>
@@ -293,7 +292,7 @@ my $som = SOM->new;
 $module->mock(search => $som);
 
 my $prove_id = Experian::IDAuth->new(
-    client_id      => '45',
+    client_id     => '45',
     search_option => 'CheckID',
     username      => 'my_user',
     password      => 'my_pass',
@@ -305,14 +304,18 @@ my $prove_id = Experian::IDAuth->new(
     phone         => '34878123',
     email         => 'john.galt@gmail.com',
     premise       => 'premise',
+    folder        => $tmp_dir,
 );
 
-warning_like( sub {
-  my $prove_id_result = $prove_id->get_result();
+warning_like(
+    sub {
+        my $prove_id_result = $prove_id->get_result();
 
-  ok ($prove_id_result == 0, 'check_id failed');
-}, qr/not a pdf/, 'bad pdf warning');
+        ok($prove_id_result == 0, 'check_id failed');
+    },
+    qr/not a pdf/,
+    'bad pdf warning'
+);
 
-Test::NoWarnings::had_no_warnings();
 done_testing;
 

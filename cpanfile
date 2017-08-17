@@ -15,5 +15,6 @@ on build => sub {
     requires 'Test::MockModule';
     requires 'Test::More';
     requires 'Test::Most';
-    requires 'Test::NoWarnings';
+    requires 'Test::Warnings';
+    requires 'Path::Tiny';
 };

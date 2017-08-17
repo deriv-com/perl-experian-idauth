@@ -1,19 +1,22 @@
 #!/usr/bin/perl
-use strict; use warnings;
+use strict;
+use warnings;
 
 use Test::Most;
-require Test::NoWarnings;
+use Test::Warnings;
+use Path::Tiny;
 
-use lib 'lib';
 use Experian::IDAuth;
+
+my $tmp_dir = Path::Tiny->tempdir(CLEANUP => 1);
 
 my $proveid = Experian::IDAuth->new(
     client        => {},
-    search_option => 'ProveID_KYC'
+    search_option => 'ProveID_KYC',
+    folder        => $tmp_dir,
 );
 
-
-my $xml =<<EOD;
+my $xml = <<EOD;
 <?xml version="1.0" encoding="utf-8"?>
 <Search Type="Result">
   <CountryCode>GBR</CountryCode>
@@ -268,11 +271,10 @@ EOD
 my $h = $proveid->set(result_as_xml => $xml)->_xml_as_hash;
 
 my $num_keys = 10;
-ok (scalar keys %$h == $num_keys, 'num keys of hashref');
+ok(scalar keys %$h == $num_keys, 'num keys of hashref');
 
 my $person_age = 52;
-ok ($h->{Person}{Age} eq '52', 'person age');
+ok($h->{Person}{Age} eq '52', 'person age');
 
-Test::NoWarnings::had_no_warnings();
 done_testing;
 

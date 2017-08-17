@@ -468,15 +468,18 @@ sub _do_192_authentication {
     $self->_build_request
         || die("Cannot build xml_request for [" . $self->{client_id} . "/$search_option]");
 
-    # Remove old pdf in case this client has done the 192 pdf request before
-    my $file_pdf = $self->_pdf_report_filename;
-    unlink $file_pdf if -e $file_pdf;
-
     eval { $self->_send_request } || do {
         my $err = $@ || '?';
         warn "could not send pdf request: $err";
         return;
     };
+
+    my $result = $self->_xml_as_hash;
+    die "ErrorCode: $result->{ErrorCode}, ErrorMessage: $result->{ErrorMessage}" if $result->{ErrorCode};
+
+    # Remove old pdf in case this client has done the 192 pdf request before
+    my $file_pdf = $self->_pdf_report_filename;
+    unlink $file_pdf if -e $file_pdf;
 
     # Save xml result
     my $folder_xml = "$self->{folder}/xml";
