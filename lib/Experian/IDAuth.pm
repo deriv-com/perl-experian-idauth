@@ -165,7 +165,7 @@ sub _build_request {
 sub _send_request {
     my $self = shift;
 
-    my $request = $self->{request_as_xml} || die 'needs request';
+    my $request = $self->{request_as_xml} // die 'needs request';
 
     # Hide password
     (my $request1 = $request) =~ s/\<Password\>.+\<\/Password\>/\<Password\>XXXXXXX<\/Password\>/;
@@ -242,7 +242,7 @@ sub _build_addresses_tag {
     my $self = shift;
 
     my $postcode     = $self->{postcode};
-    my $premise      = $self->{premise} || die 'needs premise';
+    my $premise      = $self->{premise} // die 'needs premise';
     my $country_code = $self->_build_country_code_tag;
 
     return qq(<Addresses><Address Current="1"><Premise>$premise</Premise>) . qq(<Postcode>$postcode</Postcode>$country_code</Address></Addresses>);
