@@ -85,10 +85,7 @@ sub save_pdf_result {
         # Download pdf result on given reference number
         $mech->get("$url/archive/index.cfm?event=archive.pdf&id=$our_ref");
         1;
-    } or do {
-        my $err = $@;
-        die "errors downloading pdf: $err";
-    };
+    } or die "errors downloading pdf: $@";
 
     # Save the result to our pdf path
     my $folder_pdf = "$self->{folder}/pdf";
@@ -288,10 +285,7 @@ sub _get_result_proveid {
 
     my $report = $self->{result_as_xml} or die 'needs xml report';
 
-    my $twig = eval { XML::Twig->parse($report) } or do {
-        my $err = $@;
-        die "could not parse xml report: $err";
-    };
+    my $twig = eval { XML::Twig->parse($report) } or die "could not parse xml report: $@";
 
     my ($report_summary_twig) = $twig->get_xpath('/Search/Result/Summary/ReportSummary/DatablocksSummary');
 
@@ -448,10 +442,7 @@ sub _do_192_authentication {
 
     eval { $self->_build_request } or die "Cannot build xml_request for [" . $self->{client_id} . "/$search_option]";
 
-    eval { $self->_send_request } or do {
-        my $err = $@ || '?';
-        die "could not send xml request: $err";
-    };
+    eval { $self->_send_request } or die "could not send xml request: $@";
 
     my $result = $self->_xml_as_hash;
     die "ErrorCode: $result->{ErrorCode}, ErrorMessage: $result->{ErrorMessage}" if $result->{ErrorCode};
