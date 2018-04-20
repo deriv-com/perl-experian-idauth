@@ -115,6 +115,8 @@ sub has_downloaded_pdf {
     return $file_type =~ /PDF/;
 }
 
+sub has_downloaded_xml { return -f shift->_xml_report_filename; }
+
 sub has_done_request {
     my $self = shift;
     return -f $self->_xml_report_filename;
