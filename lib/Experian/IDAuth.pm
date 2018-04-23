@@ -117,10 +117,7 @@ sub has_downloaded_pdf {
 
 sub has_downloaded_xml { return -f shift->_xml_report_filename; }
 
-sub has_done_request {
-    my $self = shift;
-    return -f $self->_xml_report_filename;
-}
+sub has_done_request { return shift->has_downloaded_xml; }
 
 sub get_192_xml_report {
     my $self = shift;
