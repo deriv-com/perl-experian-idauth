@@ -1,4 +1,6 @@
 package Experian::IDAuth;
+
+use 5.010;
 use strict;
 use warnings;
 
@@ -6,11 +8,13 @@ our $VERSION = '2.52';
 
 use Locale::Country;
 use Path::Tiny;
+use Try::Tiny;
 use WWW::Mechanize;
 use XML::Simple;
 use XML::Twig;
 use SOAP::Lite;
 use IO::Socket::SSL 'SSL_VERIFY_NONE';
+use Carp;
 
 sub new {
     my ($class, %args) = @_;
@@ -45,7 +49,7 @@ sub get_result {
 
     my $search_option = $self->{search_option};
 
-    die "invalid search_option $search_option" if $search_option !~ /(?:ProveID_KYC|CheckID)/;
+    croak "invalid search_option $search_option" if $search_option !~ /(?:ProveID_KYC|CheckID)/;
 
     $self->_do_192_authentication;
 
@@ -58,10 +62,10 @@ sub save_pdf_result {
     my $self = shift;
 
     # Parse and convert the result to hash
-    my $result = $self->_xml_as_hash or die 'no xml result in place';
+    my $result = $self->_xml_as_hash or croak 'no xml result in place';
 
     # 192 reference which we should pass to 192 to download the result
-    my $our_ref = $result->{OurReference} or die "No 'OurReference'; invalid save-pdf request";
+    my $our_ref = $result->{OurReference} or croak "No 'OurReference'; invalid save-pdf request";
 
     my $url  = $self->{members_url};
     my $mech = WWW::Mechanize->new();
@@ -70,7 +74,7 @@ sub save_pdf_result {
         SSL_verify_mode => SSL_VERIFY_NONE
     );
 
-    eval {
+    try {
 
         # Get the login page
         $mech->get("$url/signin/");
@@ -85,7 +89,9 @@ sub save_pdf_result {
         # Download pdf result on given reference number
         $mech->get("$url/archive/index.cfm?event=archive.pdf&id=$our_ref");
         1;
-    } or die "errors downloading pdf: $@";
+    } catch {
+        croak "errors downloading pdf: $_";
+    };
 
     # Save the result to our pdf path
     my $folder_pdf = "$self->{folder}/pdf";
@@ -101,7 +107,7 @@ sub save_pdf_result {
     my $file_type = qx(file $file_pdf);
     if ($file_type !~ /PDF/) {
         unlink $file_pdf;
-        die "discarding downloaded file $file_pdf, not a pdf!";
+        croak "discarding downloaded file $file_pdf, not a pdf!";
     }
 
     return 1;
@@ -119,7 +125,6 @@ sub has_done_request {
     my $self = shift;
     return -f $self->_xml_report_filename;
 }
-
 
 sub get_192_xml_report {
     my $self = shift;
@@ -163,7 +168,7 @@ sub _build_request {
 sub _send_request {
     my $self = shift;
 
-    my $request = $self->{request_as_xml} // die 'needs request';
+    my $request = $self->{request_as_xml} // croak 'needs request';
 
     # Hide password
     (my $request1 = $request) =~ s/\<Password\>.+\<\/Password\>/\<Password\>XXXXXXX<\/Password\>/;
@@ -179,7 +184,7 @@ sub _send_request {
 
     # Do it
     my $som = $soap->search($request);
-    die "ERRTEXT: " . $som->fault->faultstring if $som->fault;
+    croak "ERRTEXT: " . $som->fault->faultstring if $som->fault;
 
     my $result = $som->result;
     $self->{result_as_xml} = $result;
@@ -197,7 +202,7 @@ sub _build_country_code_tag {
     my $two_digit_country   = $self->{residence};
     my $three_digit_country = uc Locale::Country::country_code2code($two_digit_country, LOCALE_CODE_ALPHA_2, LOCALE_CODE_ALPHA_3);
 
-    $three_digit_country or die "Client " . $self->{client_id} . " could not get country from residence [$two_digit_country]";
+    $three_digit_country or croak "Client " . $self->{client_id} . " could not get country from residence [$two_digit_country]";
 
     return "<CountryCode>$three_digit_country</CountryCode>";
 }
@@ -205,7 +210,7 @@ sub _build_country_code_tag {
 sub _build_person_tag {
     my $self = shift;
 
-    my $dob = $self->{date_of_birth} or die "No date of birth for " . $self->{client_id};
+    my $dob = $self->{date_of_birth} or croak "No date of birth for " . $self->{client_id};
 
     if ($dob =~ /^(\d\d\d\d)/) {
         my $birth_year = $1;
@@ -220,7 +225,7 @@ sub _build_person_tag {
             return;
         }
     } else {
-        die "Invalid date of birth [$dob] for " . $self->{client_id};
+        croak "Invalid date of birth [$dob] for " . $self->{client_id};
     }
 
     return
@@ -240,7 +245,7 @@ sub _build_addresses_tag {
     my $self = shift;
 
     my $postcode     = $self->{postcode};
-    my $premise      = $self->{premise} // die 'needs premise';
+    my $premise      = $self->{premise} // croak 'needs premise';
     my $country_code = $self->_build_country_code_tag;
 
     return qq(<Addresses><Address Current="1"><Premise>$premise</Premise>) . qq(<Postcode>$postcode</Postcode>$country_code</Address></Addresses>);
@@ -284,9 +289,9 @@ sub _xml_as_hash {
 sub _get_result_proveid {
     my $self = shift;
 
-    my $report = $self->{result_as_xml} or die 'needs xml report';
+    my $report = $self->{result_as_xml} or croak 'needs xml report';
 
-    my $twig = eval { XML::Twig->parse($report) } or die "could not parse xml report: $@";
+    my $twig = try { XML::Twig->parse($report) } catch { croak "could not parse xml report: $_" };
 
     my ($report_summary_twig) = $twig->get_xpath('/Search/Result/Summary/ReportSummary/DatablocksSummary');
 
@@ -305,7 +310,7 @@ sub _get_result_proveid {
 
     my $decision = {matches => []};
 
-    # check if client has died or fraud
+    # check if client has croakd or fraud
     my $cr_deceased = $credit_reference->findvalue('DeceasedMatch') || 0;
     $report_summary{Deceased} ||= 0;
     my $confidence_level = 0;
@@ -383,7 +388,7 @@ sub _get_result_checkid {
     my $passed = 0;
 
     # Convert xml to hashref
-    my $result = $self->_xml_as_hash or die 'no xml result';
+    my $result = $self->_xml_as_hash or croak 'no xml result';
 
     if ((
             ($result->{'Result'}->{'ElectoralRoll'}->{'Type'} eq 'Result' and $result->{'Result'}->{'ElectoralRoll'}->{'Summary'}->{'Decision'} == 1)
@@ -432,7 +437,7 @@ sub _do_192_authentication {
     my $residence = $self->{residence};
 
     # check for 192 supported countries
-    die "Invalid residence: " . $self->{client_id} . ", Residence $residence" unless ($self->valid_country($self->{residence}));
+    croak "Invalid residence: " . $self->{client_id} . ", Residence $residence" unless ($self->valid_country($self->{residence}));
 
     if (!$force_recheck && $self->has_done_request) {
         $self->{result_as_xml} = $self->get_192_xml_report;
@@ -441,12 +446,12 @@ sub _do_192_authentication {
 
     # No previous result so prepare a request
 
-    eval { $self->_build_request } or die "Cannot build xml_request for [" . $self->{client_id} . "/$search_option]";
+    try { $self->_build_request } catch { croak "Cannot build xml_request for [" . $self->{client_id} . "/$search_option]" };
 
-    eval { $self->_send_request } or die "could not send xml request: $@";
+    try { $self->_send_request } catch { croak "could not send xml request: $_" };
 
     my $result = $self->_xml_as_hash;
-    die "ErrorCode: $result->{ErrorCode}, ErrorMessage: $result->{ErrorMessage}" if $result->{ErrorCode};
+    croak "ErrorCode: $result->{ErrorCode}, ErrorMessage: $result->{ErrorMessage}" if $result->{ErrorCode};
 
     # Remove old pdf in case this client has done the 192 pdf request before
     my $file_pdf = $self->_pdf_report_filename;
@@ -459,7 +464,7 @@ sub _do_192_authentication {
     my $file_xml = $self->_xml_report_filename;
     Path::Tiny::path($file_xml)->spew($self->{result_as_xml});
 
-    die "Couldn't save 192.com xml result for " . $self->{client_id} unless -e $file_xml;
+    croak "Couldn't save 192.com xml result for " . $self->{client_id} unless -e $file_xml;
 
     $self->save_pdf_result;
 
