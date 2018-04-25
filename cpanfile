@@ -5,6 +5,7 @@ requires 'SOAP::Lite';
 requires 'WWW::Mechanize';
 requires 'XML::Simple';
 requires 'XML::Twig';
+requires 'Try::Tiny';
 requires 'perl', '5.006';
 
 on configure => sub {
