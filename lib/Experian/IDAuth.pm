@@ -202,7 +202,7 @@ sub _build_country_code_tag {
     my $two_digit_country   = $self->{residence};
     my $three_digit_country = uc Locale::Country::country_code2code($two_digit_country, LOCALE_CODE_ALPHA_2, LOCALE_CODE_ALPHA_3);
 
-    $three_digit_country or croak "Client " . $self->{client_id} . " could not get country from residence [$two_digit_country]";
+    croak "Client " . $self->{client_id} . " could not get country from residence [$two_digit_country]" unless $three_digit_country;
 
     return "<CountryCode>$three_digit_country</CountryCode>";
 }
@@ -310,7 +310,7 @@ sub _get_result_proveid {
 
     my $decision = {matches => []};
 
-    # check if client has croakd or fraud
+    # check if client has died or fraud
     my $cr_deceased = $credit_reference->findvalue('DeceasedMatch') || 0;
     $report_summary{Deceased} ||= 0;
     my $confidence_level = 0;
