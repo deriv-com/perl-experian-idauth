@@ -117,7 +117,9 @@ sub has_downloaded_pdf {
     my $file_pdf = $self->_pdf_report_filename;
     return 0 unless -e $file_pdf;
     open my $fh, '<', $file_pdf;
-    return mimetype($fh) =~ /PDF/i;
+    my $mime_type = mimetype($fh);
+    close $fh;
+    return $mime_type =~ /PDF/i;
 }
 
 sub has_done_request {
