@@ -659,6 +659,8 @@ L<http://search.cpan.org/dist/Experian-IDAuth/>
     XML::Twig
     SOAP::Lite
     IO::Socket
+    File::MimeInfo::Magic
+    Try::Tiny
 
 =cut
 
