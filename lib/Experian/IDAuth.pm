@@ -88,7 +88,6 @@ sub save_pdf_result {
 
         # Download pdf result on given reference number
         $mech->get("$url/archive/index.cfm?event=archive.pdf&id=$our_ref");
-        1;
     } catch {
         croak "errors downloading pdf: $_";
     };
@@ -144,7 +143,7 @@ sub valid_country {
     {
         return 1 if $country eq $_;
     }
-    return;
+    return 0;
 }
 
 sub _build_request {
@@ -222,7 +221,7 @@ sub _build_person_tag {
         my $minyear = $curyear - 100;
 
         if ($birth_year > $maxyear or $birth_year < $minyear) {
-            return;
+            return undef;
         }
     } else {
         croak "Invalid date of birth [$dob] for " . $self->{client_id};
@@ -277,7 +276,7 @@ sub _build_search_option_tag {
 
 sub _xml_as_hash {
     my $self = shift;
-    my $xml = $self->{result_as_xml} || return;
+    my $xml = $self->{result_as_xml} || return undef;
     return XML::Simple::XMLin(
         $xml,
         KeyAttr    => {DocumentID => 'type'},
@@ -468,7 +467,7 @@ sub _do_192_authentication {
 
     $self->save_pdf_result;
 
-    return;
+    return 1;
 }
 
 sub _xml_report_filename {
