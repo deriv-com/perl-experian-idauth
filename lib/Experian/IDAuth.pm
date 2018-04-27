@@ -278,7 +278,7 @@ sub _build_search_option_tag {
 
 sub _xml_as_hash {
     my $self = shift;
-    my $xml = $self->{result_as_xml} || return undef;
+    my $xml = $self->{result_as_xml} or return undef;
     return XML::Simple::XMLin(
         $xml,
         KeyAttr    => {DocumentID => 'type'},
