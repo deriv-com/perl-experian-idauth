@@ -24,6 +24,7 @@ my %WriteMakefileArgs = (
   "MIN_PERL_VERSION" => "5.014000",
   "NAME" => "Experian::IDAuth",
   "PREREQ_PM" => {
+    "File::MimeInfo::Magic" => 0,
     "IO::Socket" => 0,
     "Locale::Country" => 0,
     "Path::Tiny" => 0,
@@ -50,6 +51,7 @@ my %WriteMakefileArgs = (
 
 my %FallbackPrereqs = (
   "ExtUtils::MakeMaker" => 0,
+  "File::MimeInfo::Magic" => 0,
   "File::Spec" => 0,
   "IO::Handle" => 0,
   "IO::Socket" => 0,
