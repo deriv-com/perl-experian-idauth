@@ -13,6 +13,7 @@ use WWW::Mechanize;
 use XML::Simple;
 use XML::Twig;
 use SOAP::Lite;
+use File::MimeInfo::Magic;
 use IO::Socket::SSL 'SSL_VERIFY_NONE';
 use Carp;
 
@@ -103,8 +104,7 @@ sub save_pdf_result {
     $mech->save_content($file_pdf);
 
     # Check if the downloaded file is a pdf.
-    my $file_type = qx(file $file_pdf);
-    if ($file_type !~ /PDF/) {
+    unless ($self->has_downloaded_pdf) {
         unlink $file_pdf;
         croak "discarding downloaded file $file_pdf, not a pdf!";
     }
@@ -116,8 +116,7 @@ sub has_downloaded_pdf {
     my $self     = shift;
     my $file_pdf = $self->_pdf_report_filename;
     return 0 unless -e $file_pdf;
-    my $file_type = qx(file $file_pdf);
-    return $file_type =~ /PDF/;
+    return mimetype($file_pdf) =~ /PDF/i;
 }
 
 sub has_done_request {
