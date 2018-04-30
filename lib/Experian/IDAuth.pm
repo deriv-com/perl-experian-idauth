@@ -116,7 +116,7 @@ sub has_downloaded_pdf {
     my $self     = shift;
     my $file_pdf = $self->_pdf_report_filename;
     return 0 unless -e $file_pdf;
-    open my $fh, '<', $file_pdf;
+    open my $fh, '<', $file_pdf or croak "Could not open $file_pdf: $!";
     my $mime_type = mimetype($fh);
     close $fh;
     return $mime_type =~ /PDF/i;
