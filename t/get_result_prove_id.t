@@ -307,7 +307,7 @@ my $prove_id = Experian::IDAuth->new(
     folder        => $tmp_dir,
 );
 
-warning_like(
+throws_ok(
     sub {
         my $prove_id_result = $prove_id->get_result();
 

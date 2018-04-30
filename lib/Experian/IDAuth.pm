@@ -1,4 +1,6 @@
 package Experian::IDAuth;
+
+use 5.010;
 use strict;
 use warnings;
 
@@ -6,11 +8,14 @@ our $VERSION = '2.52';
 
 use Locale::Country;
 use Path::Tiny;
+use Try::Tiny;
 use WWW::Mechanize;
 use XML::Simple;
 use XML::Twig;
 use SOAP::Lite;
+use File::MimeInfo::Magic;
 use IO::Socket::SSL 'SSL_VERIFY_NONE';
+use Carp;
 
 sub new {
     my ($class, %args) = @_;
@@ -42,27 +47,26 @@ sub set {
 
 sub get_result {
     my $self = shift;
-    $self->_do_192_authentication || return;
-    for ($self->{search_option}) {
-        /ProveID_KYC/ && return $self->_get_result_proveid;
-        /CheckID/     && return $self->_get_result_checkid;
-        die "invalid search_option $_";
-    }
-    return;
+
+    my $search_option = $self->{search_option};
+
+    croak "invalid search_option $search_option" if $search_option !~ /(?:ProveID_KYC|CheckID)/;
+
+    $self->_do_192_authentication;
+
+    return $self->_get_result_proveid if $search_option eq 'ProveID_KYC';
+
+    return $self->_get_result_checkid;
 }
 
 sub save_pdf_result {
-
     my $self = shift;
 
     # Parse and convert the result to hash
-    my $result = $self->_xml_as_hash || die 'no xml result in place';
+    my $result = $self->_xml_as_hash or croak 'no xml result in place';
 
     # 192 reference which we should pass to 192 to download the result
-    my $our_ref = $result->{OurReference} || do {
-        warn "No 'OurReference'; invalid save-pdf request";
-        return;
-    };
+    my $our_ref = $result->{OurReference} or croak "No 'OurReference'; invalid save-pdf request";
 
     my $url  = $self->{members_url};
     my $mech = WWW::Mechanize->new();
@@ -71,7 +75,7 @@ sub save_pdf_result {
         SSL_verify_mode => SSL_VERIFY_NONE
     );
 
-    eval {
+    try {
 
         # Get the login page
         $mech->get("$url/signin/");
@@ -85,11 +89,8 @@ sub save_pdf_result {
 
         # Download pdf result on given reference number
         $mech->get("$url/archive/index.cfm?event=archive.pdf&id=$our_ref");
-        1;
-    } || do {
-        my $err = $@;
-        warn "errors downloading pdf: $err";
-        return;
+    } catch {
+        croak "errors downloading pdf: $_";
     };
 
     # Save the result to our pdf path
@@ -103,11 +104,9 @@ sub save_pdf_result {
     $mech->save_content($file_pdf);
 
     # Check if the downloaded file is a pdf.
-    my $file_type = qx(file $file_pdf);
-    if ($file_type !~ /PDF/) {
-        warn "discarding downloaded file $file_pdf, not a pdf!";
+    unless ($self->has_downloaded_pdf) {
         unlink $file_pdf;
-        return;
+        croak "discarding downloaded file $file_pdf, not a pdf!";
     }
 
     return 1;
@@ -116,9 +115,11 @@ sub save_pdf_result {
 sub has_downloaded_pdf {
     my $self     = shift;
     my $file_pdf = $self->_pdf_report_filename;
-    -e ($file_pdf) || return;
-    my $file_type = qx(file $file_pdf);
-    return $file_type =~ /PDF/;
+    return 0 unless -e $file_pdf;
+    open my $fh, '<', $file_pdf or croak "Could not open $file_pdf: $!";
+    my $mime_type = mimetype($fh);
+    close $fh;
+    return $mime_type =~ /PDF/i;
 }
 
 sub has_done_request {
@@ -144,7 +145,7 @@ sub valid_country {
     {
         return 1 if $country eq $_;
     }
-    return;
+    return 0;
 }
 
 sub _build_request {
@@ -152,13 +153,13 @@ sub _build_request {
 
     $self->{request_as_xml} =
           '<Search>'
-        . ($self->_build_authentication_tag)
-        . ($self->_build_country_code_tag || return)
-        . ($self->_build_person_tag       || return)
-        . ($self->_build_addresses_tag)
-        . ($self->_build_telephones_tag)
-        . ($self->_build_search_reference_tag || return)
-        . ($self->_build_search_option_tag)
+        . $self->_build_authentication_tag
+        . $self->_build_country_code_tag
+        . $self->_build_person_tag
+        . $self->_build_addresses_tag
+        . $self->_build_telephones_tag
+        . $self->_build_search_reference_tag
+        . $self->_build_search_option_tag
         . '</Search>';
 
     return 1;
@@ -168,7 +169,7 @@ sub _build_request {
 sub _send_request {
     my $self = shift;
 
-    my $request = $self->{request_as_xml} || die 'needs request';
+    my $request = $self->{request_as_xml} // croak 'needs request';
 
     # Hide password
     (my $request1 = $request) =~ s/\<Password\>.+\<\/Password\>/\<Password\>XXXXXXX<\/Password\>/;
@@ -184,10 +185,7 @@ sub _send_request {
 
     # Do it
     my $som = $soap->search($request);
-    if ($som->fault) {
-        warn "ERRTEXT: " . $som->fault->faultstring;
-        return;
-    }
+    croak "ERRTEXT: " . $som->fault->faultstring if $som->fault;
 
     my $result = $som->result;
     $self->{result_as_xml} = $result;
@@ -205,10 +203,7 @@ sub _build_country_code_tag {
     my $two_digit_country   = $self->{residence};
     my $three_digit_country = uc Locale::Country::country_code2code($two_digit_country, LOCALE_CODE_ALPHA_2, LOCALE_CODE_ALPHA_3);
 
-    if (not $three_digit_country) {
-        warn "Client " . $self->{client_id} . " could not get country from residence [$two_digit_country]";
-        return;
-    }
+    croak "Client " . $self->{client_id} . " could not get country from residence [$two_digit_country]" unless $three_digit_country;
 
     return "<CountryCode>$three_digit_country</CountryCode>";
 }
@@ -216,10 +211,7 @@ sub _build_country_code_tag {
 sub _build_person_tag {
     my $self = shift;
 
-    my $dob = $self->{date_of_birth} || do {
-        warn "No date of birth for " . $self->{client_id};
-        return;
-    };
+    my $dob = $self->{date_of_birth} or croak "No date of birth for " . $self->{client_id};
 
     if ($dob =~ /^(\d\d\d\d)/) {
         my $birth_year = $1;
@@ -231,11 +223,10 @@ sub _build_person_tag {
         my $minyear = $curyear - 100;
 
         if ($birth_year > $maxyear or $birth_year < $minyear) {
-            return;
+            return undef;
         }
     } else {
-        warn "Invalid date of birth [$dob] for " . $self->{client_id};
-        return;
+        croak "Invalid date of birth [$dob] for " . $self->{client_id};
     }
 
     return
@@ -255,7 +246,7 @@ sub _build_addresses_tag {
     my $self = shift;
 
     my $postcode     = $self->{postcode};
-    my $premise      = $self->{premise} || die 'needs premise';
+    my $premise      = $self->{premise} // croak 'needs premise';
     my $country_code = $self->_build_country_code_tag;
 
     return qq(<Addresses><Address Current="1"><Premise>$premise</Premise>) . qq(<Postcode>$postcode</Postcode>$country_code</Address></Addresses>);
@@ -287,7 +278,7 @@ sub _build_search_option_tag {
 
 sub _xml_as_hash {
     my $self = shift;
-    my $xml = $self->{result_as_xml} || return;
+    my $xml = $self->{result_as_xml} or return undef;
     return XML::Simple::XMLin(
         $xml,
         KeyAttr    => {DocumentID => 'type'},
@@ -299,13 +290,9 @@ sub _xml_as_hash {
 sub _get_result_proveid {
     my $self = shift;
 
-    my $report = $self->{result_as_xml} || die 'needs xml report';
+    my $report = $self->{result_as_xml} or croak 'needs xml report';
 
-    my $twig = eval { XML::Twig->parse($report) } || do {
-        my $err = $@;
-        warn "could not parse xml report: $err";
-        return;
-    };
+    my $twig = try { XML::Twig->parse($report) } catch { croak "could not parse xml report: $_" };
 
     my ($report_summary_twig) = $twig->get_xpath('/Search/Result/Summary/ReportSummary/DatablocksSummary');
 
@@ -402,10 +389,7 @@ sub _get_result_checkid {
     my $passed = 0;
 
     # Convert xml to hashref
-    my $result = $self->_xml_as_hash || do {
-        warn 'no xml result';
-        return;
-    };
+    my $result = $self->_xml_as_hash or croak 'no xml result';
 
     if ((
             ($result->{'Result'}->{'ElectoralRoll'}->{'Type'} eq 'Result' and $result->{'Result'}->{'ElectoralRoll'}->{'Summary'}->{'Decision'} == 1)
@@ -454,10 +438,7 @@ sub _do_192_authentication {
     my $residence = $self->{residence};
 
     # check for 192 supported countries
-    unless ($self->valid_country($self->{residence})) {
-        warn "Invalid residence: " . $self->{client_id} . ", Residence $residence";
-        return;
-    }
+    croak "Invalid residence: " . $self->{client_id} . ", Residence $residence" unless ($self->valid_country($self->{residence}));
 
     if (!$force_recheck && $self->has_done_request) {
         $self->{result_as_xml} = $self->get_192_xml_report;
@@ -465,17 +446,13 @@ sub _do_192_authentication {
     }
 
     # No previous result so prepare a request
-    $self->_build_request
-        || die("Cannot build xml_request for [" . $self->{client_id} . "/$search_option]");
 
-    eval { $self->_send_request } || do {
-        my $err = $@ || '?';
-        warn "could not send pdf request: $err";
-        return;
-    };
+    try { $self->_build_request } catch { croak "Cannot build xml_request for [" . $self->{client_id} . "/$search_option]" };
+
+    try { $self->_send_request } catch { croak "could not send xml request: $_" };
 
     my $result = $self->_xml_as_hash;
-    die "ErrorCode: $result->{ErrorCode}, ErrorMessage: $result->{ErrorMessage}" if $result->{ErrorCode};
+    croak "ErrorCode: $result->{ErrorCode}, ErrorMessage: $result->{ErrorMessage}" if $result->{ErrorCode};
 
     # Remove old pdf in case this client has done the 192 pdf request before
     my $file_pdf = $self->_pdf_report_filename;
@@ -483,16 +460,12 @@ sub _do_192_authentication {
 
     # Save xml result
     my $folder_xml = "$self->{folder}/xml";
-    if (not -d $folder_xml) {
-        Path::Tiny::path($folder_xml)->mkpath;
-    }
+    Path::Tiny::path($folder_xml)->mkpath unless -d $folder_xml;
+
     my $file_xml = $self->_xml_report_filename;
     Path::Tiny::path($file_xml)->spew($self->{result_as_xml});
 
-    if (not -e $file_xml) {
-        warn "Couldn't save 192.com xml result for " . $self->{client_id};
-        return;
-    }
+    croak "Couldn't save 192.com xml result for " . $self->{client_id} unless -e $file_xml;
 
     $self->save_pdf_result;
 
@@ -686,6 +659,8 @@ L<http://search.cpan.org/dist/Experian-IDAuth/>
     XML::Twig
     SOAP::Lite
     IO::Socket
+    File::MimeInfo::Magic
+    Try::Tiny
 
 =cut
 
