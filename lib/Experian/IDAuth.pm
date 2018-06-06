@@ -309,7 +309,14 @@ sub _get_result_proveid {
 
     return unless $credit_reference and $kyc_summary;
 
-    my $decision = {matches => []};
+    my $decision = {matches => [], kyc_summary_score => 0};
+    
+    # calculate kyc summary score
+    $decision->{kyc_summary_score}++ if $kyc_summary->findvalue('FullNameAndAddress/Count');
+    $decision->{kyc_summary_score}++ if $kyc_summary->findvalue('SurnameAndAddress/Count');
+    $decision->{kyc_summary_score}++ if $kyc_summary->findvalue('Address/Count');
+    $decision->{kyc_summary_score}++ if $kyc_summary->findvalue('Alerts/Count');
+    $decision->{kyc_summary_score}++ if $kyc_summary->findvalue('DateOfBirth/Count');
 
     # check if client has died or fraud
     my $cr_deceased = $credit_reference->findvalue('DeceasedMatch') || 0;
