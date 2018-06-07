@@ -310,7 +310,7 @@ sub _get_result_proveid {
     return unless $credit_reference and $kyc_summary;
 
     my $decision = {matches => [], kyc_summary_score => 0};
-    
+
     # calculate kyc summary score
     $decision->{kyc_summary_score}++ if $kyc_summary->findvalue('FullNameAndAddress/Count');
     $decision->{kyc_summary_score}++ if $kyc_summary->findvalue('SurnameAndAddress/Count');
