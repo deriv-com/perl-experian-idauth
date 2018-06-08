@@ -2381,6 +2381,7 @@ $result = examine($age_only_1), is($result->{age_verified}, 1, "Age only 1, age 
 is($result->{fully_authenticated}, 1, 'Age only 1, Fully authenticated');
 ok(not(exists $result->{deceased}), 'Age only 1, not deceased');
 ok(not(exists $result->{deny}),     'Age only 1, not denied');
+is($result->{kyc_summary_score}, 4, 'Age only 1, kyc summary score is 4');
 
 $result = examine($age_only_2), is($result->{age_verified}, 1, "Age only 2, age verified");
 is($result->{fully_authenticated}, 1, 'Age only 2, Fully authenticated');
@@ -2433,6 +2434,7 @@ $result = examine($age_only_10), is($result->{age_verified}, 1, "Age only 10, ag
 is($result->{fully_authenticated}, 1, 'Age only 10, Fully authenticated');
 ok(not(exists $result->{deceased}), 'Age only 10, not deceased');
 ok(not(exists $result->{deny}),     'Age only 10, not denied');
+is($result->{kyc_summary_score}, 1, 'Age only 10, kyc summary score is 1');
 
 done_testing;
 
