@@ -312,9 +312,11 @@ sub _get_result_proveid {
     my $decision = {matches => [], kyc_summary_score => 0};
 
     # calculate kyc summary score
-    if ($kyc_summary->findvalue('FullNameAndAddress/Count') > 0 && $kyc_summary->findvalue('DateOfBirth/Count') > 0)
+    
+    if ( ( my $nameCount = $kyc_summary->findvalue('FullNameAndAddress/Count') ) > 0
+    && ( my $dobCount = $kyc_summary->findvalue('DateOfBirth/Count') ) > 0 )
     {
-        $decision->{kyc_summary_score} = ($kyc_summary->findvalue('FullNameAndAddress/Count') + $kyc_summary->findvalue('DateOfBirth/Count'));
+        $decision->{kyc_summary_score} = $nameCount + $dobCount;
     }
 
     # check if client has died or fraud
