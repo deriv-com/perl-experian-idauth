@@ -341,7 +341,7 @@ sub _get_result_proveid {
         $decision->{fraud} = 1;
     }
 
-    # check if client is age verified
+    # get number of total verifications
     my $cr_total = $credit_reference->findvalue('TotalNumberOfVerifications')
         || 0;
     $decision->{num_verifications} = $cr_total;
