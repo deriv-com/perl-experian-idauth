@@ -312,7 +312,7 @@ throws_ok(
         my $prove_id_result = $prove_id->get_result();
 
         ok($prove_id_result->{fully_authenticated},    'fully authenticated');
-        ok($prove_id_result->{age_verified},           'age verified');
+        ok($prove_id_result->{kyc_summary_score} == 5, 'kyc_summary_score');
         ok($prove_id_result->{num_verifications} == 3, 'TotalNumberOfVerifications');
     },
     qr/not a pdf/,
