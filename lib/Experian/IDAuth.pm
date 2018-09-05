@@ -172,12 +172,16 @@ sub _2fa_header {
     
     my $loginid = $self->{username};
     my $password = $self->{password};
+    my $private_key = $self->{private_key};
+    my $public_key = $self->{public_key};
+    
+    for ($loginid, $password, $private_key, $public_key) {
+        die "$_ is required for 2FA Authentication" unless $_;   
+    }
+    
     my $timestamp = time();
     
     my $to_be_hashed = $loginid . $password . $timestamp;
-    
-    my $private_key = $self->{private_key};
-    my $public_key = $self->{public_key};
     
     my $hash = hmac_sha256($to_be_hashed, $private_key);
     
