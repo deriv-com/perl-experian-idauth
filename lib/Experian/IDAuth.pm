@@ -168,7 +168,7 @@ sub _build_request {
     return 1;
 }
 
-# This is built based on the User Guide we received from Experian avaialble here : https://github.com/regentmarkets/third_party_API_docs/tree/master/AML
+# This is built based Section 3b on the User Guide we received from Experian avaialble here : https://github.com/regentmarkets/third_party_API_docs/blob/master/AML/User%20Guide%20for%202FA.pdf
 sub _2fa_header {
     my $self = shift;
     
