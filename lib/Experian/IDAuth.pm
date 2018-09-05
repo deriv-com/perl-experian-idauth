@@ -179,9 +179,7 @@ sub _2fa_header {
     
     my $timestamp = time();
     
-    my $to_be_hashed = $loginid . $password . $timestamp;
-    
-    my $hash = hmac_sha256($to_be_hashed, $private_key);
+    my $hash = hmac_sha256($loginid, $password, $timestamp, $private_key);
     
     my $hmac_sig = $hash . '_' . $timestamp . '_' . $public_key;
     
