@@ -207,7 +207,7 @@ sub _send_request {
     $soap->transport->timeout(60);
 
     # Do it
-    my $som = $soap->search($request, _2fa_header());
+    my $som = $soap->search($request, $self->_2fa_header());
     croak "ERRTEXT: " . $som->fault->faultstring if $som->fault;
 
     my $result = $som->result;
