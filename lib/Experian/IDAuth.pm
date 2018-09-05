@@ -16,6 +16,8 @@ use SOAP::Lite;
 use File::MimeInfo::Magic;
 use IO::Socket::SSL 'SSL_VERIFY_NONE';
 use Carp;
+use SOAP::Header;
+use Digest::SHA qw/hmac_sha256/;
 
 sub new {
     my ($class, %args) = @_;
@@ -165,6 +167,26 @@ sub _build_request {
     return 1;
 }
 
+# This is built based on the User Guide we received from Experian
+sub _2fa_header {
+    my $self = shift;
+    
+    my $loginid = self->{username};
+    my $password = self->{password};
+    my $timestamp = time();
+    
+    my $to_be_hashed = $loginid . $password . $timestamp;
+    
+    my $private_key = self->{private_key};
+    my $public_key = self->{public_key};
+    
+    my $hash = hmac_sha256($to_be_hashed, $private_key);
+    
+    my $hmac_sig = $hash . '_' . $timestamp . '_' . $public_key;
+    
+    return SOAP::Header->name('signature')->value($data);
+}
+
 # Send the given SOAP request to 192.com
 sub _send_request {
     my $self = shift;
@@ -184,7 +206,7 @@ sub _send_request {
     $soap->transport->timeout(60);
 
     # Do it
-    my $som = $soap->search($request);
+    my $som = $soap->search($request, _2fa_header());
     croak "ERRTEXT: " . $som->fault->faultstring if $som->fault;
 
     my $result = $som->result;
