@@ -30,6 +30,8 @@ sub defaults {
     return (
         username    => 'experian_user',
         password    => '?',
+        private_key => 'private_key',
+        public_key  => 'public_key',
         members_url => 'https://proveid.experian.com',
         api_uri     => 'http://corpwsdl.oneninetwo',
         api_proxy   => 'https://xml.proveid.experian.com/IDSearch.cfc',
@@ -174,10 +176,6 @@ sub _2fa_header {
     my $password = $self->{password};
     my $private_key = $self->{private_key};
     my $public_key = $self->{public_key};
-    
-    for ($loginid, $password, $private_key, $public_key) {
-        die "$_ is required for 2FA Authentication" unless $_;   
-    }
     
     my $timestamp = time();
     
