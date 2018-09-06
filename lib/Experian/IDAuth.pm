@@ -155,7 +155,7 @@ sub _build_request {
     my $self = shift;
 
     $self->{request_as_xml} =
-          '<Search>'
+          '<xml><![CDATA[<Search>'
         . $self->_build_authentication_tag
         . $self->_build_country_code_tag
         . $self->_build_person_tag
@@ -163,7 +163,7 @@ sub _build_request {
         . $self->_build_telephones_tag
         . $self->_build_search_reference_tag
         . $self->_build_search_option_tag
-        . '</Search>';
+        . '</Search>]]></xml>';
 
     return 1;
 }
@@ -181,9 +181,14 @@ sub _2fa_header {
     
     my $hash = hmac_sha256($loginid, $password, $timestamp, $private_key);
     
+    # Digest::SHA doesn't pad it's outputs so we have to do it manually.
+    while (length($hash) % 4) {
+		$hash .= '=';
+	}
+    
     my $hmac_sig = $hash . '_' . $timestamp . '_' . $public_key;
     
-    return SOAP::Header->name('signature')->value($hmac_sig);
+    return SOAP::Header->name('head:Signature')->value($hmac_sig);
 }
 
 # Send the given SOAP request to 192.com
@@ -196,7 +201,7 @@ sub _send_request {
     (my $request1 = $request) =~ s/\<Password\>.+\<\/Password\>/\<Password\>XXXXXXX<\/Password\>/;
 
     # Create soap object
-    my $soap = SOAP::Lite->readable(1)->uri($self->{api_uri})->proxy($self->{api_proxy});
+    my $soap = SOAP::Lite->readable(1)->uri($self->{api_uri})->proxy($self->{api_proxy})->ns('http://xml.proveid.experian.com/xsd/Headers', 'head';
 
     $soap->transport->ssl_opts(
         verify_hostname => 0,
@@ -205,7 +210,7 @@ sub _send_request {
     $soap->transport->timeout(60);
 
     # Do it
-    my $som = $soap->search($request, $self->_2fa_header());
+    my $som = $soap->search(SOAP::Data->type('xml' => $request), $self->_2fa_header());
     croak "ERRTEXT: " . $som->fault->faultstring if $som->fault;
 
     my $result = $som->result;
