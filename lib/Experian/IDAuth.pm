@@ -201,7 +201,7 @@ sub _send_request {
     (my $request1 = $request) =~ s/\<Password\>.+\<\/Password\>/\<Password\>XXXXXXX<\/Password\>/;
 
     # Create soap object
-    my $soap = SOAP::Lite->readable(1)->uri($self->{api_uri})->proxy($self->{api_proxy})->ns('http://xml.proveid.experian.com/xsd/Headers', 'head';
+    my $soap = SOAP::Lite->readable(1)->uri($self->{api_uri})->proxy($self->{api_proxy})->ns('http://xml.proveid.experian.com/xsd/Headers', 'head');
 
     $soap->transport->ssl_opts(
         verify_hostname => 0,
