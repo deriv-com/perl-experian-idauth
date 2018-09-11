@@ -28,14 +28,15 @@ sub new {
 sub defaults {
     my $self = shift;
     return (
-        username    => 'experian_user',
-        password    => '?',
-        private_key => 'private_key',
-        public_key  => 'public_key',
-        members_url => 'https://proveid.experian.com',
-        api_uri     => 'http://corpwsdl.oneninetwo',
-        api_proxy   => 'https://xml.proveid.experian.com/IDSearch.cfc',
-        folder      => '/tmp/proveid',
+        username      => 'experian_user',
+        password      => '?',
+        private_key   => 'private_key',
+        public_key    => 'public_key',
+        members_url   => 'https://proveid.experian.com',
+        api_uri       => 'http://corpwsdl.oneninetwo',
+        api_proxy     => 'https://xml.proveid.experian.com/IDSearch.cfc',
+        header_ns_url => 'http://xml.proveid.experian.com/xsd/Headers',
+        folder        => '/tmp/proveid',
 
         # if you're using a logger,
         #logger     => Log::Log4per::get_logger,
@@ -201,7 +202,7 @@ sub _send_request {
     (my $request1 = $request) =~ s/\<Password\>.+\<\/Password\>/\<Password\>XXXXXXX<\/Password\>/;
 
     # Create soap object
-    my $soap = SOAP::Lite->readable(1)->uri($self->{api_uri})->proxy($self->{api_proxy})->ns('http://xml.proveid.experian.com/xsd/Headers', 'head');
+    my $soap = SOAP::Lite->readable(1)->uri($self->{api_uri})->proxy($self->{api_proxy})->ns(header_ns_url, 'head');
 
     $soap->transport->ssl_opts(
         verify_hostname => 0,
