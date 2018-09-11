@@ -335,7 +335,15 @@ sub _get_result_proveid {
 
     return unless $credit_reference and $kyc_summary;
 
-    my $decision = {matches => []};
+    my $decision = {matches => [], kyc_summary_score => 0};
+
+    # calculate kyc summary score
+    
+    if (( my $name_count = $kyc_summary->findvalue('FullNameAndAddress/Count')) > 0
+    && ( my $dob_count = $kyc_summary->findvalue('DateOfBirth/Count')) > 0 )
+    {
+        $decision->{kyc_summary_score} = $name_count + $dob_count;
+    }
 
     # check if client has died or fraud
     my $cr_deceased = $credit_reference->findvalue('DeceasedMatch') || 0;
@@ -359,15 +367,10 @@ sub _get_result_proveid {
         $decision->{fraud} = 1;
     }
 
-    # check if client is age verified
-    my $kyc_dob = $kyc_summary->findvalue('DateOfBirth/Count') || 0;
+    # get number of total verifications
     my $cr_total = $credit_reference->findvalue('TotalNumberOfVerifications')
         || 0;
     $decision->{num_verifications} = $cr_total;
-
-    if ($kyc_dob and $cr_total) {
-        $decision->{age_verified} = 1;
-    }
 
     # check if client is in any suspicious list
     # we don't care about: COAMatch
@@ -564,9 +567,6 @@ Then use this module.
         die;
     }
 
-    if ($prove_id_result->{age_verified}) {
-        # client's age is verified
-    }
     if ($prove_id_result->{deceased} || $prove_id_result->{fraud}) {
         # client flagged as deceased or fraud
     }
