@@ -16,7 +16,7 @@ use SOAP::Lite;
 use File::MimeInfo::Magic;
 use IO::Socket::SSL 'SSL_VERIFY_NONE';
 use Carp;
-use Digest::SHA qw/hmac_sha256/;
+use Digest::SHA qw(hmac_sha256);
 
 sub new {
     my ($class, %args) = @_;
@@ -169,7 +169,7 @@ sub _build_request {
     return 1;
 }
 
-# This is built based Section 3b on the User Guide we received from Experian avaialble here : https://github.com/regentmarkets/third_party_API_docs/blob/master/AML/User%20Guide%20for%202FA.pdf
+# This is built based Section 3b on the Experian User Guide
 sub _2fa_header {
     my $self = shift;
     
