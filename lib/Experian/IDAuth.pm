@@ -16,6 +16,7 @@ use SOAP::Lite;
 use File::MimeInfo::Magic;
 use IO::Socket::SSL 'SSL_VERIFY_NONE';
 use Carp;
+use Digest::SHA qw(hmac_sha256);
 
 sub new {
     my ($class, %args) = @_;
@@ -27,12 +28,15 @@ sub new {
 sub defaults {
     my $self = shift;
     return (
-        username    => 'experian_user',
-        password    => '?',
-        members_url => 'https://proveid.experian.com',
-        api_uri     => 'http://corpwsdl.oneninetwo',
-        api_proxy   => 'https://xml.proveid.experian.com/IDSearch.cfc',
-        folder      => '/tmp/proveid',
+        username      => 'experian_user',
+        password      => '?',
+        private_key   => 'private_key',
+        public_key    => 'public_key',
+        members_url   => 'https://proveid.experian.com',
+        api_uri       => 'http://corpwsdl.oneninetwo',
+        api_proxy     => 'https://xml.proveid.experian.com/IDSearch.cfc',
+        header_ns_url => 'http://xml.proveid.experian.com/xsd/Headers',
+        folder        => '/tmp/proveid',
 
         # if you're using a logger,
         #logger     => Log::Log4per::get_logger,
@@ -152,7 +156,7 @@ sub _build_request {
     my $self = shift;
 
     $self->{request_as_xml} =
-          '<Search>'
+          '<xml><![CDATA[<Search>'
         . $self->_build_authentication_tag
         . $self->_build_country_code_tag
         . $self->_build_person_tag
@@ -160,9 +164,32 @@ sub _build_request {
         . $self->_build_telephones_tag
         . $self->_build_search_reference_tag
         . $self->_build_search_option_tag
-        . '</Search>';
+        . '</Search>]]></xml>';
 
     return 1;
+}
+
+# This is built based Section 3b on the Experian User Guide
+sub _2fa_header {
+    my $self = shift;
+    
+    my $loginid = $self->{username};
+    my $password = $self->{password};
+    my $private_key = $self->{private_key};
+    my $public_key = $self->{public_key};
+    
+    my $timestamp = time();
+    
+    my $hash = hmac_sha256($loginid, $password, $timestamp, $private_key);
+    
+    # Digest::SHA doesn't pad it's outputs so we have to do it manually.
+    while (length($hash) % 4) {
+		$hash .= '=';
+	}
+    
+    my $hmac_sig = $hash . '_' . $timestamp . '_' . $public_key;
+    
+    return SOAP::Header->name('head:Signature')->value($hmac_sig);
 }
 
 # Send the given SOAP request to 192.com
@@ -175,7 +202,7 @@ sub _send_request {
     (my $request1 = $request) =~ s/\<Password\>.+\<\/Password\>/\<Password\>XXXXXXX<\/Password\>/;
 
     # Create soap object
-    my $soap = SOAP::Lite->readable(1)->uri($self->{api_uri})->proxy($self->{api_proxy});
+    my $soap = SOAP::Lite->readable(1)->uri($self->{api_uri})->proxy($self->{api_proxy})->ns($self->{header_ns_url}, 'head');
 
     $soap->transport->ssl_opts(
         verify_hostname => 0,
@@ -184,7 +211,7 @@ sub _send_request {
     $soap->transport->timeout(60);
 
     # Do it
-    my $som = $soap->search($request);
+    my $som = $soap->search(SOAP::Data->type('xml' => $request), $self->_2fa_header());
     croak "ERRTEXT: " . $som->fault->faultstring if $som->fault;
 
     my $result = $som->result;
