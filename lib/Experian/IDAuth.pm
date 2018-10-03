@@ -76,7 +76,9 @@ sub save_pdf_result {
     my $mech = WWW::Mechanize->new();
     $mech->ssl_opts(
         verify_hostname => 0,
-        SSL_verify_mode => SSL_VERIFY_NONE
+        SSL_verify_mode => SSL_VERIFY_NONE,
+        SSL_key_file => "/etc/rmg/ssl/key/NEW_KEY.key",
+        SSL_cert_file => "/etc/rmg/ssl/crt/NEW_CERT.crt"
     );
 
     try {
@@ -89,8 +91,6 @@ sub save_pdf_result {
             with_fields => {
                 login    => $self->{username},
                 password => $self->{password},
-                SSL_key_file => "/etc/rmg/ssl/key/NEW_KEY.key",
-                SSL_cert_file => "/etc/rmg/ssl/crt/NEW_CERT.crt"
             });
 
         # Download pdf result on given reference number
