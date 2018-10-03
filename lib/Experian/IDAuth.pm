@@ -89,6 +89,8 @@ sub save_pdf_result {
             with_fields => {
                 login    => $self->{username},
                 password => $self->{password},
+                SSL_key_file => "/etc/rmg/ssl/key/NEW_KEY.key",
+                SSL_cert_file => "/etc/rmg/ssl/crt/NEW_CERT.crt"
             });
 
         # Download pdf result on given reference number
