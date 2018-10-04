@@ -77,8 +77,8 @@ sub save_pdf_result {
     $mech->ssl_opts(
         verify_hostname => 0,
         SSL_verify_mode => SSL_VERIFY_NONE,
-        SSL_key_file => "/etc/rmg/ssl/key/NEW_KEY.key",
-        SSL_cert_file => "/etc/rmg/ssl/crt/NEW_CERT.crt"
+        SSL_key_file => "/etc/rmg/ssl/key/experian.key",
+        SSL_cert_file => "/etc/rmg/ssl/crt/experian.crt"
     );
 
     try {
