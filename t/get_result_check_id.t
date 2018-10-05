@@ -291,6 +291,9 @@ EOD
 my $som = SOM->new;
 $module->mock(search => $som);
 
+my $exp = Test::MockModule->new('Experian::IDAuth');
+$exp->mock(save_pdf_result => sub {return});
+
 my $prove_id = Experian::IDAuth->new(
     client_id     => '45',
     search_option => 'CheckID',
@@ -307,15 +310,9 @@ my $prove_id = Experian::IDAuth->new(
     folder        => $tmp_dir,
 );
 
-throws_ok(
-    sub {
-        my $prove_id_result = $prove_id->get_result();
+my $prove_id_result = $prove_id->get_result();
 
-        ok($prove_id_result == 0, 'check_id failed');
-    },
-    qr/not a pdf/,
-    'bad pdf warning'
-);
+ok($prove_id_result == 0, 'check_id failed');
 
 done_testing;
 

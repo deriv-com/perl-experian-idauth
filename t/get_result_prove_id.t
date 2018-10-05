@@ -291,6 +291,9 @@ EOD
 my $som = SOM->new;
 $module->mock(search => $som);
 
+my $exp = Test::MockModule->new('Experian::IDAuth');
+$exp->mock(save_pdf_result => sub {return});
+
 my $prove_id = Experian::IDAuth->new(
     client_id     => '45',
     search_option => 'ProveID_KYC',
@@ -307,17 +310,11 @@ my $prove_id = Experian::IDAuth->new(
     folder        => $tmp_dir,
 );
 
-throws_ok(
-    sub {
-        my $prove_id_result = $prove_id->get_result();
+my $prove_id_result = $prove_id->get_result();
 
-        ok($prove_id_result->{fully_authenticated},    'fully authenticated');
-        ok($prove_id_result->{kyc_summary_score} == 5, 'kyc_summary_score');
-        ok($prove_id_result->{num_verifications} == 3, 'TotalNumberOfVerifications');
-    },
-    qr/not a pdf/,
-    'Bad pdf warning'
-);
+ok($prove_id_result->{fully_authenticated},    'fully authenticated');
+ok($prove_id_result->{kyc_summary_score} == 5, 'kyc_summary_score');
+ok($prove_id_result->{num_verifications} == 3, 'TotalNumberOfVerifications');
 
 done_testing;
 

@@ -16,7 +16,7 @@ use SOAP::Lite;
 use File::MimeInfo::Magic;
 use IO::Socket::SSL 'SSL_VERIFY_NONE';
 use Carp;
-use Digest::SHA qw(hmac_sha256);
+use Digest::SHA qw(hmac_sha256_base64);
 
 sub new {
     my ($class, %args) = @_;
@@ -76,7 +76,9 @@ sub save_pdf_result {
     my $mech = WWW::Mechanize->new();
     $mech->ssl_opts(
         verify_hostname => 0,
-        SSL_verify_mode => SSL_VERIFY_NONE
+        SSL_verify_mode => SSL_VERIFY_NONE,
+        SSL_key_file => "/etc/rmg/ssl/key/experian.key",
+        SSL_cert_file => "/etc/rmg/ssl/crt/experian.crt"
     );
 
     try {
@@ -180,7 +182,7 @@ sub _2fa_header {
     
     my $timestamp = time();
     
-    my $hash = hmac_sha256($loginid, $password, $timestamp, $private_key);
+    my $hash = hmac_sha256_base64($loginid, $password, $timestamp, $private_key);
     
     # Digest::SHA doesn't pad it's outputs so we have to do it manually.
     while (length($hash) % 4) {
