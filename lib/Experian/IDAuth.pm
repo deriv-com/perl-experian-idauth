@@ -8,7 +8,7 @@ our $VERSION = '2.52';
 
 use Locale::Country;
 use Path::Tiny;
-use Try::Tiny;
+use Syntax::Keyword::Try;
 use WWW::Mechanize;
 use XML::Simple;
 use XML::Twig;
@@ -95,9 +95,9 @@ sub save_pdf_result {
 
         # Download pdf result on given reference number
         $mech->get("$url/archive/index.cfm?event=archive.pdf&id=$our_ref");
-    } catch {
-        croak "errors downloading pdf: $_";
-    };
+    } catch ($e) {
+        croak "errors downloading pdf: $e";
+    }
 
     # Save the result to our pdf path
     my $folder_pdf = "$self->{folder}/pdf";
@@ -321,7 +321,7 @@ sub _get_result_proveid {
 
     my $report = $self->{result_as_xml} or croak 'needs xml report';
 
-    my $twig = try { XML::Twig->parse($report) } catch { croak "could not parse xml report: $_" };
+    my $twig = try { XML::Twig->parse($report) } catch ($e) { croak "could not parse xml report: $e" };
 
     my ($report_summary_twig) = $twig->get_xpath('/Search/Result/Summary/ReportSummary/DatablocksSummary');
 
@@ -481,7 +481,7 @@ sub _do_192_authentication {
 
     try { $self->_build_request } catch { croak "Cannot build xml_request for [" . $self->{client_id} . "/$search_option]" };
 
-    try { $self->_send_request } catch { croak "could not send xml request: $_" };
+    try { $self->_send_request } catch ($e) { croak "could not send xml request: $e" };
 
     my $result = $self->_xml_as_hash;
     croak "ErrorCode: $result->{ErrorCode}, ErrorMessage: $result->{ErrorMessage}" if $result->{ErrorCode};
@@ -689,7 +689,7 @@ L<http://search.cpan.org/dist/Experian-IDAuth/>
     SOAP::Lite
     IO::Socket
     File::MimeInfo::Magic
-    Try::Tiny
+    Syntax::Keyword::Try
 
 =cut
 

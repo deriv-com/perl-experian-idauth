@@ -6,7 +6,7 @@ requires 'WWW::Mechanize';
 requires 'XML::Simple';
 requires 'XML::Twig';
 requires 'File::MimeInfo::Magic';
-requires 'Try::Tiny';
+requires 'Syntax::Keyword::Try';
 requires 'perl', '5.006';
 
 on configure => sub {
