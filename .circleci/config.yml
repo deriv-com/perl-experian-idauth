@@ -1,0 +1,44 @@
+jobs:
+  test:
+    parameters:
+      perl-version:
+        description: The Perl version we want to test with
+        type: string
+        default: "5.34"
+    docker:
+      - image: perldocker/perl-tester:<< parameters.perl-version >>
+    steps:
+      - checkout
+      - run:
+          command:
+            cpm install -g --no-test Dist::Zilla Dist::Zilla::App::Command::cover ExtUtils::MakeMaker
+          name: Install Dzil
+      - run:
+          name: Install dzil author dependencies
+          command: |
+            cpm install -g \
+            -w 2 \
+            --mirror=http://cpan.cpantesters.org/ $(dzil authordeps --missing)
+      - run:
+          name: Install dist deps
+          command: |
+            dzil listdeps --author --missing --cpanm-versions | xargs cpanm -n
+      - run:
+          name: Run Tests
+          command: |
+            dzil smoke --release --author && dzil cover -test && dzil xtest
+
+workflows:
+  build-workflow:
+    jobs: &1
+    - test:
+        matrix:
+          parameters:
+            perl-version:
+              - "5.24"
+              - "5.26"
+              - "5.28"
+              - "5.30"
+              - "5.32"
+              - "5.34"
+version: 2.1
