@@ -77,8 +77,8 @@ sub save_pdf_result {
     $mech->ssl_opts(
         verify_hostname => 0,
         SSL_verify_mode => SSL_VERIFY_NONE,
-        SSL_key_file => "/etc/rmg/ssl/key/experian.key",
-        SSL_cert_file => "/etc/rmg/ssl/crt/experian.crt"
+        SSL_key_file    => "/etc/rmg/ssl/key/experian.key",
+        SSL_cert_file   => "/etc/rmg/ssl/crt/experian.crt"
     );
 
     try {
@@ -174,23 +174,23 @@ sub _build_request {
 # This is built based Section 3b on the Experian User Guide
 sub _2fa_header {
     my $self = shift;
-    
-    my $loginid = $self->{username};
-    my $password = $self->{password};
+
+    my $loginid     = $self->{username};
+    my $password    = $self->{password};
     my $private_key = $self->{private_key};
-    my $public_key = $self->{public_key};
-    
+    my $public_key  = $self->{public_key};
+
     my $timestamp = time();
-    
+
     my $hash = hmac_sha256_base64($loginid, $password, $timestamp, $private_key);
-    
+
     # Digest::SHA doesn't pad it's outputs so we have to do it manually.
     while (length($hash) % 4) {
-		$hash .= '=';
-	}
-    
+        $hash .= '=';
+    }
+
     my $hmac_sig = $hash . '_' . $timestamp . '_' . $public_key;
-    
+
     return SOAP::Header->name('head:Signature')->value($hmac_sig);
 }
 
@@ -307,7 +307,7 @@ sub _build_search_option_tag {
 
 sub _xml_as_hash {
     my $self = shift;
-    my $xml = $self->{result_as_xml} or return undef;
+    my $xml  = $self->{result_as_xml} or return undef;
     return XML::Simple::XMLin(
         $xml,
         KeyAttr    => {DocumentID => 'type'},
@@ -321,7 +321,12 @@ sub _get_result_proveid {
 
     my $report = $self->{result_as_xml} or croak 'needs xml report';
 
-    my $twig = try { XML::Twig->parse($report) } catch ($e) { croak "could not parse xml report: $e" };
+    my $twig;
+    try {
+        $twig = XML::Twig->parse($report);
+    } catch ($e) {
+        croak "could not parse xml report: $e"
+    }
 
     my ($report_summary_twig) = $twig->get_xpath('/Search/Result/Summary/ReportSummary/DatablocksSummary');
 
@@ -338,12 +343,15 @@ sub _get_result_proveid {
 
     return unless $credit_reference and $kyc_summary;
 
-    my $decision = {matches => [], kyc_summary_score => 0};
+    my $decision = {
+        matches           => [],
+        kyc_summary_score => 0
+    };
 
     # calculate kyc summary score
-    
-    if (( my $name_count = $kyc_summary->findvalue('FullNameAndAddress/Count')) > 0
-    && ( my $dob_count = $kyc_summary->findvalue('DateOfBirth/Count')) > 0 )
+
+    if (   (my $name_count = $kyc_summary->findvalue('FullNameAndAddress/Count')) > 0
+        && (my $dob_count = $kyc_summary->findvalue('DateOfBirth/Count')) > 0)
     {
         $decision->{kyc_summary_score} = $name_count + $dob_count;
     }
@@ -401,7 +409,7 @@ sub _get_result_proveid {
     # if client is in Directors list, we should not fully authenticate him
     if ($report_summary{Directors}) {
         $decision->{director} = 1;
-        $decision->{matches} = [@{$decision->{matches}}, 'Directors'];
+        $decision->{matches}  = [@{$decision->{matches}}, 'Directors'];
     }
 
     # check if client can be fully authenticated
@@ -479,9 +487,17 @@ sub _do_192_authentication {
 
     # No previous result so prepare a request
 
-    try { $self->_build_request } catch { croak "Cannot build xml_request for [" . $self->{client_id} . "/$search_option]" };
+    try {
+        $self->_build_request
+    } catch {
+        croak "Cannot build xml_request for [" . $self->{client_id} . "/$search_option]"
+    }
 
-    try { $self->_send_request } catch ($e) { croak "could not send xml request: $e" };
+    try {
+        $self->_send_request
+    } catch ($e) {
+        croak "could not send xml request: $e"
+    };
 
     my $result = $self->_xml_as_hash;
     croak "ErrorCode: $result->{ErrorCode}, ErrorMessage: $result->{ErrorMessage}" if $result->{ErrorCode};
