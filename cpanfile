@@ -1,5 +1,5 @@
 requires 'IO::Socket';
-requires 'Locale::Country';
+requires 'Locale::Country', '3.70';
 requires 'Path::Tiny';
 requires 'SOAP::Lite';
 requires 'WWW::Mechanize';
