@@ -10,6 +10,7 @@ use Locale::Country;
 use Path::Tiny;
 use Syntax::Keyword::Try;
 use WWW::Mechanize;
+## no critic (DiscouragedModules)
 use XML::Simple;
 use XML::Twig;
 use SOAP::Lite;
