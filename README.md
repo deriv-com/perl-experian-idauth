@@ -1,80 +1,166 @@
-Experian-IDAuth
+# NAME
 
-This module provides an interface to Experian's Identity Authenticate service. 
-http://www.experian.co.uk/identity-and-fraud/products/authenticate.html
+Experian::IDAuth - Experian's ID Authenticate service
 
-[![Build Status](https://travis-ci.org/binary-com/perl-experian-idauth.svg?branch=master)](https://travis-ci.org/binary-com/perl-experian-idauth)
-[![codecov](https://codecov.io/gh/binary-com/perl-experian-idauth/branch/master/graph/badge.svg)](https://codecov.io/gh/binary-com/perl-experian-idauth)
-[![Gitter chat](https://badges.gitter.im/binary-com/perl-experian-idauth.png)](https://gitter.im/binary-com/perl-experian-idauth)
+# DESCRIPTION
 
-INSTALLATION
+This module provides an interface to Experian's Identity Authenticate service.
+[http://www.experian.co.uk/identity-and-fraud/products/authenticate.html](http://www.experian.co.uk/identity-and-fraud/products/authenticate.html)
 
-To install this module, run the following commands:
+First create a subclass of this module to override the defaults method
+with your own data.
 
-	perl Makefile.PL
-	make
-	make test
-	make install
+    package My::Experian;
+    use strict;
+    use warnings;
+    use base 'Experian::IDAuth';
 
-SUPPORT AND DOCUMENTATION
+    sub defaults {
+        my $self = shift;
 
-After installing, you can find documentation for this module with the
-perldoc command.
+        return (
+            $self->SUPER::defaults,
+            username      => 'my_user',
+            password      => 'my_pass',
+            residence     => $residence,
+            postcode      => $postcode || '',
+            date_of_birth => $date_of_birth || '',
+            first_name    => $first_name || '',
+            last_name     => $last_name || '',
+            phone         => $phone || '',
+            email         => $email || '',
+        );
+    }
+
+    1;
+
+Then use this module.
+
+    use My::Experian;
+
+    # search_option can either be ProveID_KYC or CheckID
+    my $prove_id = My::Experian->new(
+        search_option => 'ProveID_KYC',
+    );
+
+    my $prove_id_result = $prove_id->get_result();
+
+    if (!$prove_id->has_done_request) {
+        # connection problems
+        die;
+    }
+
+    if ($prove_id_result->{deceased} || $prove_id_result->{fraud}) {
+        # client flagged as deceased or fraud
+    }
+    if ($prove_id_result->{deny}) {
+        # client on any of PEP, OFAC, or BOE list
+        # you can check $prove_id_result->{PEP} etc if you want more detail
+    }
+    if ($prove_id_result->{fully_authenticated}) {
+        # client successfully authenticated,
+        # DOES NOT MEAN NO CONCERNS
+
+        # check number of credit verifications done
+        print "Number of credit verifications: " . $prove_id_result->{num_verifications} . "\n";
+    }
+
+    # CheckID is a more simpler version and can be used if ProveID_KYC fails
+    my $check_id = My::Experian->new(
+        search_option => 'CheckID',
+    );
+
+    if (!$check_id->has_done_request) {
+        # connection problems
+        die;
+    }
+
+    if ($check_id->get_result()) {
+        # client successfully authenticated
+    }
+
+# METHODS
+
+## new()
+
+    Creates a new object of your derived class. The parent class should contain most of the attributes required for new(). But you can set search_option to either ProveID_KYC or CheckID
+
+## get\_result()
+
+    Return the Experian results as a hashref
+
+## save\_pdf\_result()
+
+    Save the Experian credentials as a PDF
+
+## defaults()
+
+    Return default value
+
+## get\_192\_xml\_report()
+
+    Return 192 xml report
+
+## has\_done\_request()
+
+    Check the request finished or not
+
+## has\_downloaded\_pdf
+
+    Check the file is downloaded an is a pdf file
+
+## set
+
+    set attributes of object
+
+## valid\_country
+
+    Check a country is valid
+
+# AUTHOR
+
+binary.com, `perl at binary.com`
+
+# BUGS
+
+Please report any bugs or feature requests to `bug-experian-idauth at rt.cpan.org`,
+or through the web interface at
+[http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Experian-IDAuth](http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Experian-IDAuth).
+We will be notified, and then you'll automatically be notified of progress
+on your bug as we make changes.
+
+# SUPPORT
+
+You can find documentation for this module with the perldoc command.
 
     perldoc Experian::IDAuth
 
 You can also look for information at:
 
-    RT, CPAN's request tracker (report bugs here)
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Experian-IDAuth
+- RT: CPAN's request tracker (report bugs here)
 
-    AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/Experian-IDAuth
+    [http://rt.cpan.org/NoAuth/Bugs.html?Dist=Experian-IDAuth](http://rt.cpan.org/NoAuth/Bugs.html?Dist=Experian-IDAuth)
 
-    CPAN Ratings
-        http://cpanratings.perl.org/d/Experian-IDAuth
+- AnnoCPAN: Annotated CPAN documentation
 
-    Search CPAN
-        http://search.cpan.org/dist/Experian-IDAuth/
+    [http://annocpan.org/dist/Experian-IDAuth](http://annocpan.org/dist/Experian-IDAuth)
 
+- CPAN Ratings
 
-LICENSE AND COPYRIGHT
+    [http://cpanratings.perl.org/d/Experian-IDAuth](http://cpanratings.perl.org/d/Experian-IDAuth)
 
-Copyright (C) 2014,2015 binary.com
+- Search CPAN
 
-This program is free software; you can redistribute it and/or modify it
-under the terms of the the Artistic License (2.0). You may obtain a
-copy of the full license at:
+    [http://search.cpan.org/dist/Experian-IDAuth/](http://search.cpan.org/dist/Experian-IDAuth/)
 
-http://www.perlfoundation.org/artistic_license_2_0
+# DEPENDENCIES
 
-Any use, modification, and distribution of the Standard or Modified
-Versions is governed by this Artistic License. By using, modifying or
-distributing the Package, you accept this license. Do not use, modify,
-or distribute the Package, if you do not accept this license.
-
-If your Modified Version has been derived from a Modified Version made
-by someone other than you, you are nevertheless required to ensure that
-your Modified Version complies with the requirements of this license.
-
-This license does not grant you the right to use any trademark, service
-mark, tradename, or logo of the Copyright Holder.
-
-This license includes the non-exclusive, worldwide, free-of-charge
-patent license to make, have made, use, offer to sell, sell, import and
-otherwise transfer the Package with respect to any patent claims
-licensable by the Copyright Holder that are necessarily infringed by the
-Package. If you institute patent litigation (including a cross-claim or
-counterclaim) against any party alleging that the Package constitutes
-direct or contributory patent infringement, then this Artistic License
-to you shall terminate on the date that such litigation is filed.
-
-Disclaimer of Warranty: THE PACKAGE IS PROVIDED BY THE COPYRIGHT HOLDER
-AND CONTRIBUTORS "AS IS' AND WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
-THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE, OR NON-INFRINGEMENT ARE DISCLAIMED TO THE EXTENT PERMITTED BY
-YOUR LOCAL LAW. UNLESS REQUIRED BY LAW, NO COPYRIGHT HOLDER OR
-CONTRIBUTOR WILL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR
-CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THE PACKAGE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+    Locale::Country
+    Path::Tiny
+    WWW::Mechanize
+    XML::Simple
+    XML::Twig
+    SOAP::Lite
+    IO::Socket
+    File::MimeInfo::Magic
+    Syntax::Keyword::Try
