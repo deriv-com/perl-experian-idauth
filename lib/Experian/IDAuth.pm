@@ -4,7 +4,7 @@ use 5.010;
 use strict;
 use warnings;
 
-our $VERSION = '2.52';
+our $VERSION = '2.54';
 
 use Locale::Country;
 use Path::Tiny;
